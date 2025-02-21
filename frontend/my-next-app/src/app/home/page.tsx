@@ -20,16 +20,16 @@ export default function Home() {
             <header className="fixed top-0 left-0 w-full z-50 bg-white shadow-sm">
                 <div className="container mx-auto px-4 py-4">
                     <div className="flex items-center justify-between">
-                        <Link href="/" className="text-3xl font-extrabold text-pink-500">
+                        <Link href="/home" className="text-3xl font-extrabold text-pink-500">
                             T2BIKE
                         </Link>
 
                         <nav className="hidden md:flex items-center space-x-9">
-                            <Link href="/" className="text-black hover:text-pink-500 transition-colors font-bold">
+                            <Link href="/home" className="text-black hover:text-pink-500 transition-colors font-bold">
                                 Trang chủ
                             </Link>
 
-                            <Link href="/blog" className="text-black hover:text-pink-500 transition-colors font-bold">
+                            <Link href="/all-products" className="text-black hover:text-pink-500 transition-colors font-bold">
                                 Cửa hàng
                             </Link>
 
@@ -37,11 +37,11 @@ export default function Home() {
                                 Về chúng tôi
                             </Link>
                             
-                            <Link href="/about" className="text-black hover:text-pink-500 transition-colors font-bold">
+                            <Link href="/faq" className="text-black hover:text-pink-500 transition-colors font-bold">
                                 FAQ
                             </Link>
 
-                            <Link href="/about" className="text-black hover:text-pink-500 transition-colors font-bold">
+                            <Link href="/contact" className="text-black hover:text-pink-500 transition-colors font-bold">
                                 Liên hệ
                             </Link>
                         </nav>
@@ -58,11 +58,11 @@ export default function Home() {
                             <ShoppingCart className="h-6 w-6" />
                         </button>
                         <div className='border-2 border-gray-400 p-1.5'>
-                            <Link href="/about" className="text-black hover:text-pink-500 transition-colors">
+                            <Link href="/signin" className="text-black hover:text-pink-500 transition-colors">
                             Đăng nhập
                             </Link>
                         </div>
-                        <Link href="/about" className="text-black hover:text-pink-500 transition-colors">
+                        <Link href="/signup" className="text-black hover:text-pink-500 transition-colors">
                             Đăng ký
                         </Link>
                         </div>
