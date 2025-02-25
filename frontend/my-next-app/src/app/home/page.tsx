@@ -18,7 +18,7 @@ export default function Home() {
             transition={{ duration: 1, ease: "easeOut" }} // Hiệu ứng mượt hơn
         >
             <header className="fixed top-0 left-0 w-full z-50 bg-white shadow-sm">
-                <div className="container mx-auto px-4 py-4">
+                <div className="container mx-auto px-24 py-4">
                     <div className="flex items-center justify-between">
                         <Link href="/home" className="text-3xl font-extrabold text-pink-500">
                             T2BIKE
@@ -306,4 +306,3 @@ export default function Home() {
     </div>
   )
 }
-

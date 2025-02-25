@@ -109,7 +109,7 @@ export default function ProductsPage() {
             transition={{ duration: 1, ease: "easeOut" }}
             className="sticky top-0 z-50 bg-white shadow-sm"
         >
-            <div className="container mx-auto px-4 py-4">
+            <div className="container mx-auto px-24 py-4">
                 <div className="flex items-center justify-between">
                     <Link href="/home" className="text-3xl font-extrabold text-pink-500">
                     T2BIKE
@@ -120,7 +120,7 @@ export default function ProductsPage() {
                             Trang chủ
                         </Link>
 
-                        <Link href="/all-product" className="text-black hover:text-pink-500 transition-colors font-bold">
+                        <Link href="/all-products" className="text-black hover:text-pink-500 transition-colors font-bold">
                             Cửa hàng
                         </Link>
 
@@ -316,7 +316,7 @@ export default function ProductsPage() {
             </div>
         </main>
 
-      {/* Footer */}
+        {/* Footer */}
         <motion.footer
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
