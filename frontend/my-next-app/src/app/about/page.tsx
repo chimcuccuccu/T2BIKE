@@ -685,6 +685,7 @@ export default function AboutPage() {
             </div>
             </motion.div>
         </section>
+        
         {/* Footer */}
         <motion.footer
             initial={{ opacity: 0, y: 50 }}

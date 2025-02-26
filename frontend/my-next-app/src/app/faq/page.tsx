@@ -1,14 +1,84 @@
 "use client"
 
-import { motion } from 'framer-motion';
+import { animate, motion, AnimatePresence } from 'framer-motion';
 
 import Image from "next/image"
 import Link from "next/link"
 import { Facebook, Heart, Search, ShoppingCart, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Accordion, AccordionItem, AccordionContent, AccordionTrigger } from '@/components/ui/accordion';
+import { Accordion, AccordionItem, AccordionContent, AccordionTrigger} from '@/components/ui/accordion';
 
+const fadeInUp = {
+    initial: { opacity: 0, y: 20},
+    animate: { opacity: 1, y: 0},
+    exit: { opacity: 0, y: -20},
+}
+
+const stagger = {
+    animate: {
+        transition: {
+            staggerChildren: 0.1,
+        },
+    },
+}
+
+const faqData = [
+    {
+      id: "item-0",
+      question: "Tại sao nên đạp xe?",
+      answer: (
+        <div>
+            Đạp xe mang lại nhiều lợi ích cho sức khỏe và cuộc sống, bao gồm:
+            <li>Cải thiện sức khỏe tim mạch – Giúp giảm nguy cơ bệnh tim, huyết áp cao và đột quỵ.</li>
+            <li>Tăng cường cơ bắp và xương khớp – Phát triển cơ chân, đùi, bắp chân và giảm nguy cơ loãng xương.</li>
+            <li>Hỗ trợ giảm cân – Đốt cháy calo hiệu quả, giúp kiểm soát cân nặng.</li>
+            <li>Giảm căng thẳng, cải thiện tâm trạng – Kích thích sản sinh endorphin giúp tinh thần sảng khoái, giảm stress.</li>
+            <li>Tốt cho hệ hô hấp – Tăng cường dung tích phổi, cải thiện sức bền.</li>
+            <li>TIết kiệm chi phí, bảo vệ môi trường – Giảm sử dụng nhiên liệu, hạn chế khí thải và kẹt xe.</li>
+            Nhiều khách hàng yêu quý của T2BIKE đã cải thiện gần như hoàn toàn bệnh thoái hóa khớp gối nhờ rèn luyện
+            <br/>đạp xe mỗi ngày ♥️♥️♥️
+        </div>
+      ),
+    },
+    {
+      id: "item-1",
+      question: "Xe đạp thể thao hàng Nhật bãi là gì?",
+      answer:
+        "Xe đạp thể thao Nhật bãi là những chiếc xe đạp đã qua sử dụng được nhập khẩu từ Nhật Bản. Những xe này thường có chất lượng tốt, độ bền cao và được bảo quản cẩn thận.",
+    },
+    {
+      id: "item-2",
+      question: "Vì sao xe đạp thể thao hàng Nhật bãi được ưa chuộng?",
+      answer:
+        "Xe đạp Nhật bãi được ưa chuộng vì chất lượng cao, độ bền tốt, giá cả hợp lý so với xe mới. Ngoài ra, người Nhật có thói quen bảo quản xe cẩn thận nên xe thường trong tình trạng tốt.",
+    },
+    {
+        id: "item-3",
+        question: "Xe đạp thể thao hàng Nhật bãi có bền không?",
+        answer:
+          "Xe đạp Nhật bãi nổi tiếng với độ bền cao nhờ khung sườn chắc chắn, linh kiện chất lượng và quy trình sản xuất nghiêm ngặt. Nếu được bảo dưỡng đúng cách, xe có thể sử dụng trong nhiều năm mà không gặp vấn đề lớn. Những khách hàng yêu quý đã mua ở T2BIKE và thời gian sử dụng đã lên đến đơn vị tính bằng năm nhưng xe vẫn bền và đạp rất tốt.",
+    },
+    {
+        id: "item-4",
+        question: "Giá xe đạp thể thao hàng Nhật bãi khoảng bao nhiêu?",
+        answer:
+          "Giá dao động từ 2 triệu - 50 triệu VNĐ, tùy vào thương hiệu, tình trạng xe, và dòng xe. Xe cao cấp hoặc còn mới thường có giá cao hơn.",
+    },
+    {
+        id: "item-5",
+        question: "  Ai nên chọn xe đạp thể thao Nhật Bãi?",
+        answer:
+          "Xe đạp Nhật bãi phù hợp với những người muốn sở hữu xe đạp chất lượng cao, bền bỉ, với giá cả hợp lý, vừa túi tiền, người mới tập đi xe đạp thể thao, hoặc những người đam mê xe đạp vintage Nhật Bản.",
+    },
+    {
+        id: "item-6",
+        question: "Chính sách bảo hành của T2BIKE như thế nào?",
+        answer:
+          "Vì là thợ \"nhà trồng được\" nên quý khách yên tâm gửi gắm chiếc xe yêu quý của mình đến cửa hàng mỗi khi xe có trục trặc nhé, nhưng nghề chính của chúng tôi vẫn là đi dạy nên đôi khi thời gian sửa chữa và bảo hành sẽ không nhanh như mong muốn!",
+    },
+]
+  
 export default function FAQSection() {
     return (
         <div className="min-h-screen bg-white">
@@ -74,93 +144,54 @@ export default function FAQSection() {
 
             {/* Main */}
             <div className="container mx-auto p-6 bg-gradient-to-b from-pink-50 to-white min-h-screen"> 
-                <h1 className="mt-20 text-4xl md:text-5xl font-bold text-center mb-10">
-                    MỘT SỐ CÂU HỎI THƯỜNG GẶP
-                </h1>
+                <motion.h1
+                    initial= {{ opacity: 0, y: -30}}
+                    animate= {{ opacity: 1, y: 0}}
+                    transition={{ duration: 0.6, ease: "easeOut"}}
+                    className="mt-20 text-4xl md:text-5xl font-bold text-center mb-10"
+                    >
+                        MỘT SỐ CÂU HỎI THƯỜNG GẶP
+                </motion.h1>
 
                 {/* Question */}
-                <Accordion type="single" collapsible className="grid space-y-4 w-5/6 mx-auto">
-                    <AccordionItem value="item-0" className="border rounded-xl shadow-sm bg-white px-10"> 
-                        <AccordionTrigger className="text-pink-500 font-bold text-2xl hover:text-pink-600 hover:no-underline">
-                            Tại sao nên đạp xe?
-                        </AccordionTrigger>
-                        <AccordionContent className="text-gray-600 text-xl pb-4">
-                        Đạp xe mang lại nhiều lợi ích cho sức khỏe và cuộc sống, bao gồm:
-                            <li>Cải thiện sức khỏe tim mạch – Giúp giảm nguy cơ bệnh tim, huyết áp cao và đột quỵ.</li>
-                            <li>Tăng cường cơ bắp và xương khớp – Phát triển cơ chân, đùi, bắp chân và giảm nguy cơ loãng xương.</li>
-                            <li>Hỗ trợ giảm cân – Đốt cháy calo hiệu quả, giúp kiểm soát cân nặng.</li>
-                            <li>Giảm căng thẳng, cải thiện tâm trạng – Kích thích sản sinh endorphin giúp tinh thần sảng khoái, giảm stress.</li>
-                            <li>Tốt cho hệ hô hấp – Tăng cường dung tích phổi, cải thiện sức bền.</li>
-                            <li>TIết kiệm chi phí, bảo vệ môi trường – Giảm sử dụng nhiên liệu, hạn chế khí thải và kẹt xe.</li>
-                            Nhiều khách hàng yêu quý của T2BIKE đã cải thiện gần như hoàn toàn bệnh thoái hóa khớp gối nhờ rèn luyện
-                            <br/>đạp xe mỗi ngày ♥️♥️♥️
-                        </AccordionContent>
-                    </AccordionItem>
-
-                    <AccordionItem value="item-1" className="border rounded-xl shadow-sm bg-white px-10"> 
-                        <AccordionTrigger className="text-pink-500 font-bold text-2xl hover:text-pink-600 hover:no-underline">
-                            Xe đạp thể thao hàng Nhật bãi là gì?
-                        </AccordionTrigger>
-                        <AccordionContent className="text-gray-600 text-xl pb-4">
-                            Xe đạp thể thao Nhật bãi là những chiếc xe đạp đã qua sử dụng được nhập khẩu từ Nhật Bản. Những xe này
-                            thường có chất lượng tốt, độ bền cao và được bảo quản cẩn thận.
-                        </AccordionContent>
-                    </AccordionItem>
-
-                    <AccordionItem value="item-2" className="border rounded-xl shadow-sm bg-white px-10"> 
-                        <AccordionTrigger className="text-pink-500 font-bold text-2xl hover:text-pink-600 hover:no-underline">
-                            Vì sao xe đạp thể thao hàng Nhật bãi được ưa chuộng?
-                        </AccordionTrigger>
-                        <AccordionContent className="text-gray-600 text-xl pb-4">
-                            Xe đạp Nhật bãi được ưa chuộng vì chất lượng cao, độ bền tốt, giá cả hợp lý so với xe mới. Ngoài ra, người
-                            Nhật có thói quen bảo quản xe cẩn thận nên xe thường trong tình trạng tốt.
-                        </AccordionContent>
-                    </AccordionItem>
-
-                    <AccordionItem value="item-3" className="border rounded-xl shadow-sm bg-white px-10"> 
-                        <AccordionTrigger className="text-pink-500 font-bold text-2xl hover:text-pink-600 hover:no-underline">
-                            Xe đạp thể thao hàng Nhật bãi có bền không?
-                        </AccordionTrigger>
-                        <AccordionContent className="text-gray-600 text-xl pb-4">
-                            Xe đạp Nhật bãi nổi tiếng với độ bền cao nhờ khung sườn chắc chắn, linh kiện chất lượng và quy trình sản xuất nghiêm ngặt.
-                            Nếu được bảo dưỡng đúng cách, xe có thể sử dụng trong nhiều năm mà không gặp vấn đề lớn. Những khách hàng yêu quý đã mua xe
-                            ở T2BIKE và thời gian sử dụng đã lên đến đơn vị tính bằng năm nhưng xe vẫn bền và đạp rất tốt.
-                        </AccordionContent>
-                    </AccordionItem>
-
-                    <AccordionItem value="item-4" className="border rounded-xl shadow-sm bg-white px-10"> 
-                        <AccordionTrigger className="text-pink-500 font-bold text-2xl hover:text-pink-600 hover:no-underline">
-                            Giá xe đạp thể thao hàng Nhật bãi khoảng bao nhiêu?
-                        </AccordionTrigger>
-                        <AccordionContent className="text-gray-600 text-xl pb-4">
-                            Giá dao động từ 2 triệu - 50 triệu VNĐ, tùy vào thương hiệu, tình trạng xe, và dòng xe. 
-                            Xe cao cấp hoặc còn mới thường có giá cao hơn.
-                        </AccordionContent>
-                    </AccordionItem>
-                    
-                    <AccordionItem value="item-5" className="border rounded-xl shadow-sm bg-white px-10"> 
-                        <AccordionTrigger className="text-pink-500 font-bold text-2xl hover:text-pink-600 hover:no-underline">
-                            Ai nên chọn xe đạp thể thao Nhật Bãi?
-                        </AccordionTrigger>
-                        <AccordionContent className="text-gray-600 text-xl pb-4">
-                            Xe đạp Nhật bãi phù hợp với những người muốn sở hữu xe đạp chất lượng cao, bền bỉ, với giá cả hợp lý, vừa túi tiền,
-                            người mới tập đi xe đạp thể thao, hoặc những người đam mê xe đạp vintage Nhật Bản.
-                        </AccordionContent>
-                    </AccordionItem>
-
-                    <AccordionItem value="item-6" className="border rounded-xl shadow-sm bg-white px-10"> 
-                        <AccordionTrigger className="text-pink-500 font-bold text-2xl hover:text-pink-600 hover:no-underline">
-                            Chính sách bảo hành của T2BIKE như thế nào?
-                        </AccordionTrigger>
-                        <AccordionContent className="text-gray-600 text-xl pb-4">
-                            Vì là thợ "nhà trồng được" nên quý khách yên tâm gửi gắm chiếc xe yêu quý của mình đến cửa hàng mỗi khi xe có trục trặc nhé,
-                            nhưng nghề chính của chúng tôi vẫn là đi dạy nên đôi khi thời gian sửa chữa và bảo hành sẽ không nhanh như mong muốn!
-                        </AccordionContent>
-                    </AccordionItem>
-                </Accordion>
+                <motion.div variants={stagger} initial="initial" animate="animate" className="grid space-y-4 w-5/6 mx-auto">
+                    <Accordion type="single" collapsible className="space-y-1">
+                        {faqData.map((item, index) => (
+                            <motion.div key={item.id} variants={fadeInUp} transition={{ duration: 0.3 }}>
+                                <AccordionItem
+                                    value={item.id}
+                                    className="border rounded-xl shadow-sm bg-white px-10 hover:shadow-md transition-shadow duration-200"
+                                >
+                                    <AccordionTrigger className="text-pink-500 font-bold text-2xl hover:text-pink-600 hover:no-underline group">
+                                        <motion.span
+                                            initial={false}
+                                            className="inline-block w-full"
+                                            whileHover={{ x: 10 }}
+                                            transition={{ type: "spring", stiffness: 200 }}
+                                        >
+                                            {item.question}
+                                        </motion.span>
+                                    </AccordionTrigger>
+                                    <AnimatePresence>
+                                        <AccordionContent className="text-gray-600 text-xl pb-4">
+                                            <motion.div
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: "auto" }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            transition={{ duration: 0.3 }}
+                                            >
+                                            {item.answer}
+                                            </motion.div>
+                                        </AccordionContent>
+                                    </AnimatePresence>
+                                </AccordionItem>
+                            </motion.div>
+                        ))}
+                    </Accordion>
+                </motion.div>
             </div>
 
-            {/* Footer */}
+        {/* Footer */}
         <motion.footer
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
@@ -180,6 +211,7 @@ export default function FAQSection() {
                 </div>
             </div>
         </div>
+
 
         {/* Main Footer */}
         <div className="border-t border-pink-100">
