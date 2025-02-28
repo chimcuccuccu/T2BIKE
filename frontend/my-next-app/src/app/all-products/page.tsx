@@ -1,6 +1,8 @@
 "use client"
 
+import { Product } from "@/types/product";
 import { useState, useEffect } from "react"
+import axios from "axios"
 import Image from "next/image"
 import Link from "next/link"
 import { motion } from "framer-motion"
@@ -10,74 +12,20 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { SliderCustom } from "./slider"
 
-// Sample product data
-const products = [{
-    name: "Xe đạp ABC",
-    price: "15.000.000 VND",
-    image: "/xe_gap.png",
-  },
-  {
-    id: 2,
-    name: "Xe đạp XYZ",
-    price: "20.000.000 VND",
-    image: "/xe_gap.png",
-  },
-  {
-    id: 3,
-    name: "Xe đạp DEF",
-    price: "18.000.000 VND",
-    image: "/xe_gap.png",
-  },
-  {
-    id: 4,
-    name: "Xe đạp DEF",
-    price: "18.000.000 VND",
-    image: "/xe_gap.png",
-  },
-  {
-    id: 3,
-    name: "Xe đạp DEF",
-    price: "18.000.000 VND",
-    image: "/xe_gap.png",
-  },
-  {
-    id: 3,
-    name: "Xe đạp DEF",
-    price: "18.000.000 VND",
-    image: "/xe_gap.png",
-  },
-  {
-    id: 3,
-    name: "Xe đạp DEF",
-    price: "18.000.000 VND",
-    image: "/xe_gap.png",
-  },
-  {
-    id: 3,
-    name: "Xe đạp DEF",
-    price: "18.000.000 VND",
-    image: "/xe_gap.png",
-  },
-  {
-    id: 3,
-    name: "Xe đạp DEF",
-    price: "18.000.000 VND",
-    image: "/xe_gap.png",
-  },
-  {
-    id: 3,
-    name: "Xe đạp DEF",
-    price: "18.000.000 VND",
-    image: "/xe_gap.png",
-  }
-]
-
 export default function ProductsPage() {
+  const [products, setProducts] = useState<Product[]>([])
   const [priceRange, setPriceRange] = useState([0, 50])
   const [bikeType, setBikeType] = useState("")
   const [brand, setBrand] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const productsPerPage = 9
+
+  useEffect(() => {
+    // Fetch all products from the backend API
+    axios.get('http://localhost:8080/api/all-products')
+      .then(response => setProducts(response.data))
+      .catch(error => console.error("Error fetching products:", error))
+  }, [])
 
   useEffect(() => {
     window.scrollTo({
@@ -260,7 +208,7 @@ export default function ProductsPage() {
                             <div className="relative group">
                                 <div className="aspect-square overflow-hidden">
                                     <Image
-                                    src={product.image || "/placeholder.svg"}
+                                    src={product.imageUrl || "/placeholder.svg"}
                                     alt={product.name}
                                     width={300}
                                     height={300}
@@ -427,4 +375,3 @@ export default function ProductsPage() {
     </div>
   )
 }
-
