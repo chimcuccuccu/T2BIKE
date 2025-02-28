@@ -1,14 +1,26 @@
 "use client"
 
 import { motion } from 'framer-motion';
-
+import axios from 'axios';
 import Image from "next/image"
 import Link from "next/link"
 import { Facebook, Heart, Search, ShoppingCart, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { useEffect, useState } from 'react';
 
 export default function Home() {
+    const [products, setProducts] = useState([]);
+    const [selectedCategory, setSelectedCategory] = useState('');
+
+    useEffect(() => {
+        if (selectedCategory) {
+            axios.get(`http://localhost:8080/api/products/category/${selectedCategory}`)
+                .then(response => setProducts(response.data))
+                .catch(error => console.error("Error fetching products:", error));
+        }
+    }, [selectedCategory]);
+    
     return (
     <div className="min-h-screen bg-white">
         {/* Header */}
@@ -18,7 +30,7 @@ export default function Home() {
             transition={{ duration: 1, ease: "easeOut" }} // Hiệu ứng mượt hơn
         >
             <header className="fixed top-0 left-0 w-full z-50 bg-white shadow-sm">
-                <div className="container mx-auto px-4 py-4">
+                <div className="container mx-auto px-24 py-4">
                     <div className="flex items-center justify-between">
                         <Link href="/home" className="text-3xl font-extrabold text-pink-500">
                             T2BIKE
@@ -138,68 +150,68 @@ export default function Home() {
       {/* Product Categories */}
         <section className="container mx-auto px-4 py-16">
             <h2 className="text-2xl font-bold mb-8">Danh mục sản phẩm</h2>
-            <div className="grid grid-cols-3 md:grid-cols-6 gap-4 font-bold">
-            {["Xe tay cong", "Xe tay thẳng", "Xe mini", "Xe gấp", "Quần áo", "Phụ kiện khác"].map((category, index) => (
-                <div key={index} className="group cursor-pointer">
-                <div className="aspect-square bg-pink-100 rounded-full flex items-center justify-center mb-2 group-hover:bg-pink-200 transition-colors">
-                    {category === "Xe tay cong" && (
-                        <Image
-                            src="/xe_tay_cong.png" 
-                            width={600} 
-                            height={400} 
-                            className="w-full h-auto scale-50 transition-transform duration-300 object-cover" 
-                            alt="Xe đạp"
-                        />
-                    )}
-                    {category === "Xe tay thẳng" && (
-                        <Image
-                            src="/xe_tay_thang.png" 
-                            width={600} 
-                            height={400} 
-                            className="w-full h-auto scale-50 transition-transform duration-300 object-cover" 
-                            alt="Xe đạp"
-                        />
-                    )}
-                    {category === "Xe mini" && (
-                        <Image
-                            src="/xe_mini.png" 
-                            width={600} 
-                            height={400} 
-                            className="w-full h-auto scale-50 transition-transform duration-300 object-cover" 
-                            alt="Xe đạp"
-                        />
-                    )}
-                    {category === "Xe gấp" && (
-                        <Image
-                            src="/xe_gap.png" 
-                            width={600} 
-                            height={400} 
-                            className="w-full h-auto scale-50 transition-transform duration-300 object-cover" 
-                            alt="Xe đạp"
-                        />
-                    )}
-                    {category === "Quần áo" && (
-                        <Image
-                            src="/quan_ao.png" 
-                            width={600} 
-                            height={400} 
-                            className="w-full h-auto scale-50 transition-transform duration-300 object-cover" 
-                            alt="Xe đạp"
-                        />
-                    )}
-                    {category === "Phụ kiện khác" && (
-                        <Image
-                            src="/mu_bao_hiem.png" 
-                            width={600} 
-                            height={400} 
-                            className="w-full h-auto scale-50 transition-transform duration-300 object-cover" 
-                            alt="Xe đạp"
-                        />
-                    )}
-                </div>
-                <p className="text-center text-sm">{category}</p>
-                </div>
-            ))}
+                <div className="grid grid-cols-3 md:grid-cols-6 gap-4 font-bold">
+                {["Xe tay cong", "Xe tay thẳng", "Xe mini", "Xe gấp", "Quần áo", "Phụ kiện khác"].map((category, index) => (
+                    <div key={index} className="group cursor-pointer" onClick={() => setSelectedCategory(category)}>
+                    <div className="aspect-square bg-pink-100 rounded-full flex items-center justify-center mb-2 group-hover:bg-pink-200 transition-colors">
+                        {category === "Xe tay cong" && (
+                            <Image
+                                src="/xe_tay_cong.png" 
+                                width={600} 
+                                height={400} 
+                                className="w-full h-auto scale-50 transition-transform duration-300 object-cover" 
+                                alt="Xe đạp"
+                            />
+                        )}
+                        {category === "Xe tay thẳng" && (
+                            <Image
+                                src="/xe_tay_thang.png" 
+                                width={600} 
+                                height={400} 
+                                className="w-full h-auto scale-50 transition-transform duration-300 object-cover" 
+                                alt="Xe đạp"
+                            />
+                        )}
+                        {category === "Xe mini" && (
+                            <Image
+                                src="/xe_mini.png" 
+                                width={600} 
+                                height={400} 
+                                className="w-full h-auto scale-50 transition-transform duration-300 object-cover" 
+                                alt="Xe đạp"
+                            />
+                        )}
+                        {category === "Xe gấp" && (
+                            <Image
+                                src="/xe_gap.png" 
+                                width={600} 
+                                height={400} 
+                                className="w-full h-auto scale-50 transition-transform duration-300 object-cover" 
+                                alt="Xe đạp"
+                            />
+                        )}
+                        {category === "Quần áo" && (
+                            <Image
+                                src="/quan_ao.png" 
+                                width={600} 
+                                height={400} 
+                                className="w-full h-auto scale-50 transition-transform duration-300 object-cover" 
+                                alt="Xe đạp"
+                            />
+                        )}
+                        {category === "Phụ kiện khác" && (
+                            <Image
+                                src="/mu_bao_hiem.png" 
+                                width={600} 
+                                height={400} 
+                                className="w-full h-auto scale-50 transition-transform duration-300 object-cover" 
+                                alt="Xe đạp"
+                            />
+                        )}
+                    </div>
+                    <p className="text-center text-sm">{category}</p>
+                    </div>
+                ))}
             </div>
         </section>
 
@@ -306,4 +318,3 @@ export default function Home() {
     </div>
   )
 }
-
