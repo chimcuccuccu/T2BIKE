@@ -1,8 +1,10 @@
 "use client"
 
-import { Product } from "@/types/product";
-import { useState, useEffect } from "react"
+import { notFound } from "next/navigation"
 import axios from "axios"
+import { usePathname } from "next/navigation";
+import { Product } from "@/types/product"
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { motion } from "framer-motion"
@@ -10,47 +12,92 @@ import { Heart, Search, ShoppingCart, Facebook } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { SliderCustom } from "./slider"
-import FormatPrice from "@/components/ui/FormatPrice";
+import { SliderCustom } from "@/app/all-products/slider"
+import FormatPrice from "@/components/ui/FormatPrice"
+import NoProducts from "@/components/NoProducts";
 
-export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>([])
-  const [priceRange, setPriceRange] = useState([0, 50])
-  const [bikeType, setBikeType] = useState("")
-  const [brand, setBrand] = useState("")
-  const [currentPage, setCurrentPage] = useState(1)
-  const productsPerPage = 9
+export default function Categorypage() {
+    const pathname = usePathname();
+    const category = pathname.split("/").pop();
 
-  useEffect(() => {
-    // Fetch all products from the backend API
-    axios.get('http://localhost:8081/api/all-products')
-      .then(response => setProducts(response.data))
-      .catch(error => console.error("Error fetching products:", error))
-  }, [])
+    const [products, setProducts] = useState<Product[]>([]);
 
-  useEffect(() => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    })
-  }, [currentPage])
+    const [loading, setLoading] = useState(true);
 
-  const handleSearch = () => {
-    // Tại đây, bạn có thể gửi request đến backend với các thông số đã chọn
-    console.log("Searching with filters:", { priceRange, bikeType, brand })
-    // Implement the API call or state update logic here
-  }
+    const [priceRange, setPriceRange] = useState([0, 50])
 
-  // Calculate the products to display on the current page
-  const indexOfLastProduct = currentPage * productsPerPage
-  const indexOfFirstProduct = indexOfLastProduct - productsPerPage
-  const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct)
+    const [brand, setBrand] = useState("")
 
-  // Calculate total pages
-  const totalPages = Math.ceil(products.length / productsPerPage)
+    const [currentPage, setCurrentPage] = useState(1)
+    const productsPerPage = 9
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white">
+    useEffect(() => {
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        })
+      }, [currentPage])
+    
+      const handleSearch = () => {
+        // Gửi request đến backend với các thông số đã chọn
+        console.log("Searching with filters:", { priceRange, brand })
+        // Implement the API call or state update logic here
+      }
+    
+      // Calculate the products to display on the current page
+      const indexOfLastProduct = currentPage * productsPerPage
+      const indexOfFirstProduct = indexOfLastProduct - productsPerPage
+      const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct)
+    
+      // Calculate total pages
+      const totalPages = Math.ceil(products.length / productsPerPage)
+
+    useEffect(() => {
+        if (!category) return;
+
+        axios
+        .get(`http://localhost:8081/api/all-products/category/${category}`)
+        .then ((response) => {
+            console.log("Dữ liệu sản phẩm:", response.data);
+            setProducts(response.data);
+        })
+        .catch((error) => {
+            console.error("Lỗi khi lấy sản phẩm", error);
+        })
+        .finally(() => {
+            setLoading(false);
+        });
+    }, [category]);
+
+    if (loading) return (
+        <div className="flex items-center justify-center h-screen">
+             <Image
+                src="/cat-loading.gif" 
+                alt="Loading Cat"
+                width={150}
+                height={150}
+                className="mb-4"
+            />
+            <p className="text-4xl font-bold text-pink-600">
+                Đang tải, bạn chờ xíu nha <span className="dot1">.</span><span className="dot2">.</span><span className="dot3">.</span>
+            </p>
+            <style jsx>{`
+                @keyframes blink {
+                0% { opacity: 1; }
+                33% { opacity: 0; }
+                66% { opacity: 1; }
+                100% { opacity: 1; }
+                }
+                .dot1 { animation: blink 1.5s infinite; }
+                .dot2 { animation: blink 1.5s infinite 0.2s; }
+                .dot3 { animation: blink 1.5s infinite 0.4s; }
+            `}</style>
+        </div>
+    )
+    if (products.length === 0) return <NoProducts/>
+    
+    return (
+        <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white">
         {/* Header */}
         <motion.header
             initial={{ opacity: 0, y: -50 }}
@@ -118,9 +165,26 @@ export default function ProductsPage() {
             className="container mx-auto px-4 py-4"
         >
             <div className="text-sm breadcrumbs text-gray-600 pt-10">
-            <span>Trang chủ</span>
+            <span>Danh sách sản phẩm</span>
             <span className="mx-2">/</span>
-            <span>Tất cả sản phẩm</span>
+            <span>
+                {(() => {
+                switch (category) {
+                    case "xe_tay_thang":
+                        return "Xe tay thẳng";
+                    case "xe_tay_cong":
+                        return "Xe tay cong";
+                    case "xe_mini":
+                        return "Xe mini";
+                    case "quan_ao":
+                        return "Quần áo";
+                    case "phu_kien_khac":
+                        return "Phụ kiện khác";
+                    default:
+                        return "Danh mục khác";
+                }
+                })()}
+            </span>
             </div>
         </motion.div>
 
@@ -152,21 +216,6 @@ export default function ProductsPage() {
                                 <span>{priceRange[0]}M VND</span>
                                 <span>{priceRange[1]}M VND</span>
                             </div>
-                        </div>
-
-                        {/* Bike Type */}
-                        <div className="space-y-4 mb-6">
-                            <h3 className="font-medium">Loại xe</h3>
-                            <Select onValueChange={setBikeType}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Chọn loại xe" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="road">Xe đạp đường trường</SelectItem>
-                                <SelectItem value="mountain">Xe đạp địa hình</SelectItem>
-                                <SelectItem value="city">Xe đạp thành phố</SelectItem>
-                            </SelectContent>
-                            </Select>
                         </div>
 
                         {/* Brand */}
@@ -374,5 +423,6 @@ export default function ProductsPage() {
             </div>
         </motion.footer>
     </div>
-  )
+    )
+
 }
