@@ -29,4 +29,7 @@ public class Product {
     @Column(name = "category")
     private String category;
 
+    @Column(name = "brand")
+    private String brand;
+
 }

@@ -2,13 +2,17 @@ package com.example.bikeshop.service;
 
 import com.example.bikeshop.entity.Product;
 import com.example.bikeshop.repository.ProductRepository;
+import com.example.bikeshop.specification.ProductSpecification;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class ProductService {
     @Autowired
     private ProductRepository productRepository;
@@ -39,5 +43,13 @@ public class ProductService {
 
     public void deleteProduct(Long id) {
         productRepository.deleteById(id);
+    }
+
+    public List<Product> filterProducts(String category, String brand, Double minPrice, Double maxPrice) {
+        Specification<Product> spec = Specification.where(ProductSpecification.hasCategory(category))
+                .and(ProductSpecification.hasBrand(brand))
+                .and(ProductSpecification.hasPriceBetween(minPrice, maxPrice));
+
+        return productRepository.findAll(spec);
     }
 }

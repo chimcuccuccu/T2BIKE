@@ -2,6 +2,7 @@ package com.example.bikeshop.controller;
 
 import com.example.bikeshop.entity.Product;
 import com.example.bikeshop.service.ProductService;
+import com.example.bikeshop.specification.ProductSpecification;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -46,5 +47,15 @@ public class ProductController {
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/filter")
+    public ResponseEntity<List<Product>> filterProducts(
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String brand,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice) {
+        List<Product> products = productService.filterProducts(category, brand, minPrice, maxPrice);
+        return ResponseEntity.ok(products);
     }
 }

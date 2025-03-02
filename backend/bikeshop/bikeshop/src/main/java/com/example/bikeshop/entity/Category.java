@@ -1,10 +1,10 @@
 package com.example.bikeshop.entity;
 
 public enum Category {
-    XE_TAY_THANG,
-    XE_TAY_CONG,
-    XE_MINI,
-    XE_GAP,
-    QUAN_AO,
-    PHU_KIEN_KHAC,
+    xe_tay_thang,
+    xe_tay_cong,
+    xe_mini,
+    xe_gap,
+    quan_ao,
+    phu_kien_khac,
 }
