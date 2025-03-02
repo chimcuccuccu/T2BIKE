@@ -38,12 +38,12 @@ export default function ContactSection() {
                 <header className="fixed top-0 left-0 w-full z-50 bg-white shadow-sm">
                     <div className="container mx-auto px-24 py-4">
                         <div className="flex items-center justify-between">
-                            <Link href="/home" className="text-3xl font-extrabold text-pink-500">
+                                      <Link href="/home" className="text-3xl font-extrabold text-pink-500">
                                 T2BIKE
                             </Link>
 
                             <nav className="hidden md:flex items-center space-x-9">
-                                <Link href="/home" className="text-black hover:text-pink-500 transition-colors font-bold">
+                                                 <Link href="/home" className="text-black hover:text-pink-500 transition-colors font-bold">
                                     Trang chủ
                                 </Link>
 
