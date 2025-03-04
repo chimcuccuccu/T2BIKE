@@ -58,4 +58,15 @@ public class ProductController {
         List<Product> products = productService.filterProducts(category, brand, minPrice, maxPrice);
         return ResponseEntity.ok(products);
     }
+
+    @GetMapping("/category/{category}/filter")
+    public ResponseEntity<List<Product>> filterProducts(
+            @PathVariable String category,
+            @RequestParam(required = false) String brand,
+            @RequestParam(required = false, defaultValue = "0") double minPrice,
+            @RequestParam(required = false, defaultValue = "999999999") double maxPrice) {
+
+        List<Product> products = productService.filterProducts(category, brand, minPrice, maxPrice);
+        return ResponseEntity.ok(products);
+    }
 }
