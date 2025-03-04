@@ -268,6 +268,7 @@ export default function ProductsPage() {
 
                     {/* Product Grid */}
                     <motion.div
+                    key={JSON.stringify(products)}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
@@ -279,52 +280,56 @@ export default function ProductsPage() {
                             </h2>
 
                             {products.length === 0 ? (
-                                <p className="text-gray-600">Không tìm thấy sản phẩm nào.</p>
+                                 <div className="flex flex-col items-center justify-center">
+                                 <Image
+                                     src="/dog.gif" 
+                                     alt="Loading Dog"
+                                     width={150}
+                                     height={150}
+                                     className="mb-4"
+                                 />
+                                 <h2 className="text-2xl font-semibold text-gray-700 mb-4">
+                                    Hiện tại chưa có sản phẩm nào!
+                                 </h2>
+                             </div>
                             ) : (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {products.map((product) => (
-                                        <div key={product.id} className="bg-white rounded-lg shadow-md p-4">
-                                            <h3 className="font-medium">{product.name}</h3>
-                                            <p className="text-pink-500 font-semibold">{product.price} VND</p>
+                                    {currentProducts.map((product, index) => (
+                                    <motion.div
+                                        key={index}
+                                        className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300"
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                    >
+                                        <div className="relative group">
+                                            <div className="aspect-square overflow-hidden">
+                                                <Image
+                                                src={product.imageUrl || "/placeholder.svg"}
+                                                alt={product.name}
+                                                width={300}
+                                                height={300}
+                                                className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                                                />
+                                            </div>
+                                            <div className="absolute top-4 right-4 space-y-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button className="p-2 bg-white rounded-full shadow-md hover:bg-pink-50">
+                                                <Heart className="h-5 w-5 text-pink-500" />
+                                                </button>
+                                                <button className="p-2 bg-white rounded-full shadow-md hover:bg-pink-50">
+                                                <ShoppingCart className="h-5 w-5 text-pink-500" />
+                                                </button>
+                                            </div>
                                         </div>
-                                    ))}
-                                </div>
+                                        <div className="p-4">
+                                            <h3 className="font-medium">{product.name}</h3>
+                                            <p className="text-pink-500 font-semibold mt-2"><FormatPrice price={product.price}/></p>
+                                        </div> 
+                                    </motion.div>
+                                ))} 
+                            </div> 
                             )}
                         </div>
-                        {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {currentProducts.map((product, index) => (
-                            <motion.div
-                                key={index}
-                                className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300"
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                            >
-                                <div className="relative group">
-                                    <div className="aspect-square overflow-hidden">
-                                        <Image
-                                        src={product.imageUrl || "/placeholder.svg"}
-                                        alt={product.name}
-                                        width={300}
-                                        height={300}
-                                        className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-                                        />
-                                    </div>
-                                    <div className="absolute top-4 right-4 space-y-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button className="p-2 bg-white rounded-full shadow-md hover:bg-pink-50">
-                                        <Heart className="h-5 w-5 text-pink-500" />
-                                        </button>
-                                        <button className="p-2 bg-white rounded-full shadow-md hover:bg-pink-50">
-                                        <ShoppingCart className="h-5 w-5 text-pink-500" />
-                                        </button>
-                                    </div>
-                                </div>
-                                <div className="p-4">
-                                    <h3 className="font-medium">{product.name}</h3>
-                                    <p className="text-pink-500 font-semibold mt-2"><FormatPrice price={product.price}/></p>
-                                </div> */}
-                            {/* </motion.div>
-                            ))} */}
-                        {/* </div> */}
+                        
 
                         {/* Pagination */}
                         <div className="flex justify-center mt-8">
