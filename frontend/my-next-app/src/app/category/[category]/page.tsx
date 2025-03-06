@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { SliderCustom } from "@/app/all-products/slider"
 import FormatPrice from "@/components/ui/FormatPrice"
 import NoProducts from "@/components/NoProducts";
+import { Filters } from "@/types/filters";
 
 export default function Categorypage() {
     const pathname = usePathname();
@@ -31,6 +32,45 @@ export default function Categorypage() {
     const [currentPage, setCurrentPage] = useState(1)
     const productsPerPage = 9
 
+    const [isFiltered, setIsFiltered] = useState(false);
+
+    const [filters, setFilters] = useState ({
+        minPrice: 0, 
+        maxPrice: 0,
+        brand: "",
+    })
+
+    useEffect(() => {
+        fetchCategoryProducts();
+    }, []);
+
+    const fetchCategoryProducts = async () => {
+        try {
+            const respone = await axios.get(`http://localhost:8081/api/all-products/category/${category}`)
+            setProducts(respone.data)
+        } catch (error) {
+            console.error ("Lỗi khi lấy danh sách sản phẩm:", error)
+        }
+    };
+
+    const fetchFilteredProducts = async () => {
+        try {
+            const params: Record<string, string> = {
+                minPrice: filters.minPrice.toString(),
+                maxPrice: filters.maxPrice.toString(),
+            }
+            if (filters.brand) params.brand = filters.brand
+
+            const query = new URLSearchParams(params).toString()
+            const url = `http://localhost:8081/api/all-products/category/${category}/filter?${query}`
+
+            const response = await axios.get(url)
+            setProducts(response.data)
+        } catch (error) {
+            console.error("Lỗi khi đọc sản phẩm:", error)
+        }
+    }
+
     useEffect(() => {
         window.scrollTo({
           top: 0,
@@ -38,63 +78,68 @@ export default function Categorypage() {
         })
       }, [currentPage])
     
-      const handleSearch = () => {
-        // Gửi request đến backend với các thông số đã chọn
-        console.log("Searching with filters:", { priceRange, brand })
-        // Implement the API call or state update logic here
-      }
+    const handleSearch = () => {
+        setFilters({
+            minPrice: priceRange[0] * 1_000_000,
+            maxPrice: priceRange[1] * 1_000_000,
+            brand: brand,
+        })
+        setIsFiltered(true)
+    }
     
-      // Calculate the products to display on the current page
-      const indexOfLastProduct = currentPage * productsPerPage
-      const indexOfFirstProduct = indexOfLastProduct - productsPerPage
-      const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct)
-    
-      // Calculate total pages
-      const totalPages = Math.ceil(products.length / productsPerPage)
+    const handleReset = () => {
+        setPriceRange([0, 50]);
+        setBrand("");
+        setFilters({
+            minPrice: 0,
+            maxPrice: 0,
+            brand: "",
+        });
+        setIsFiltered(false); // Đặt lại trạng thái để hiển thị tất cả sản phẩm
+        fetchCategoryProducts(); // Load lại toàn bộ danh sách sản phẩm
+    }
+    const indexOfLastProduct = currentPage * productsPerPage
+    const indexOfFirstProduct = indexOfLastProduct - productsPerPage
+    const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct)
+
+    const totalPages = Math.ceil(products.length / productsPerPage)
 
     useEffect(() => {
-        if (!category) return;
+        if (isFiltered) {
+            fetchFilteredProducts();
+        }
+    }, [filters]);
 
-        axios
-        .get(`http://localhost:8081/api/all-products/category/${category}`)
-        .then ((response) => {
-            console.log("Dữ liệu sản phẩm:", response.data);
-            setProducts(response.data);
-        })
-        .catch((error) => {
-            console.error("Lỗi khi lấy sản phẩm", error);
-        })
-        .finally(() => {
-            setLoading(false);
-        });
-    }, [category]);
+    const handleFilterChange = (key: keyof Filters, value: string | number) => {
+        setFilters(prev => ({ ...prev, [key]: value }));
+    };
 
-    if (loading) return (
-        <div className="flex items-center justify-center h-screen">
-             <Image
-                src="/cat-loading.gif" 
-                alt="Loading Cat"
-                width={150}
-                height={150}
-                className="mb-4"
-            />
-            <p className="text-4xl font-bold text-pink-600">
-                Đang tải, bạn chờ xíu nha <span className="dot1">.</span><span className="dot2">.</span><span className="dot3">.</span>
-            </p>
-            <style jsx>{`
-                @keyframes blink {
-                0% { opacity: 1; }
-                33% { opacity: 0; }
-                66% { opacity: 1; }
-                100% { opacity: 1; }
-                }
-                .dot1 { animation: blink 1.5s infinite; }
-                .dot2 { animation: blink 1.5s infinite 0.2s; }
-                .dot3 { animation: blink 1.5s infinite 0.4s; }
-            `}</style>
-        </div>
-    )
-    if (products.length === 0) return <NoProducts/>
+    // if (loading) return (
+    //     <div className="flex items-center justify-center h-screen">
+    //          <Image
+    //             src="/cat-loading.gif" 
+    //             alt="Loading Cat"
+    //             width={150}
+    //             height={150}
+    //             className="mb-4"
+    //         />
+    //         <p className="text-4xl font-bold text-pink-600">
+    //             Đang tải, bạn chờ xíu nha <span className="dot1">.</span><span className="dot2">.</span><span className="dot3">.</span>
+    //         </p>
+    //         <style jsx>{`
+    //             @keyframes blink {
+    //             0% { opacity: 1; }
+    //             33% { opacity: 0; }
+    //             66% { opacity: 1; }
+    //             100% { opacity: 1; }
+    //             }
+    //             .dot1 { animation: blink 1.5s infinite; }
+    //             .dot2 { animation: blink 1.5s infinite 0.2s; }
+    //             .dot3 { animation: blink 1.5s infinite 0.4s; }
+    //         `}</style>
+    //     </div>
+    // )
+    if (products.length === 0 && !isFiltered) return <NoProducts/>
     
     return (
         <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white">
@@ -221,12 +266,12 @@ export default function Categorypage() {
                         {/* Brand */}
                         <div className="space-y-4 mb-6">
                             <h3 className="font-medium">Hãng xe</h3>
-                            <Select onValueChange={setBrand}>
+                            <Select value={brand} onValueChange={setBrand}>
                                 <SelectTrigger>
                                 <SelectValue placeholder="Chọn hãng xe" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                <SelectItem value="giant">Giant</SelectItem>
+                                <SelectItem value="Giant">Giant</SelectItem>
                                 <SelectItem value="trek">Trek</SelectItem>
                                 <SelectItem value="specialized">Specialized</SelectItem>
                                 </SelectContent>
@@ -234,53 +279,81 @@ export default function Categorypage() {
                         </div>
 
                         {/* Search Button */}
-                        <Button className="w-full bg-pink-500 hover:bg-pink-600 text-white" onClick={handleSearch}>
-                            Tìm kiếm
-                        </Button>
+                        <div className="grid grid-cols-2 gap-2 pt-2">
+                            <Button variant="outline" onClick={handleReset} className="w-full">
+                                Mặc định
+                            </Button>
+                            <Button onClick={handleSearch} className="w-full bg-pink-500 hover:bg-pink-600 text-white">
+                                Tìm kiếm
+                            </Button>
+                        </div>
                     </div>
                 </motion.div>
 
                 {/* Product Grid */}
                 <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="flex-1"
-                >
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {currentProducts.map((product, index) => (
-                        <motion.div
-                            key={index}
-                            className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300"
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                        >
-                            <div className="relative group">
-                                <div className="aspect-square overflow-hidden">
-                                    <Image
-                                    src={product.imageUrl || "/placeholder.svg"}
-                                    alt={product.name}
-                                    width={300}
-                                    height={300}
-                                    className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-                                    />
-                                </div>
-                                <div className="absolute top-4 right-4 space-y-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button className="p-2 bg-white rounded-full shadow-md hover:bg-pink-50">
-                                    <Heart className="h-5 w-5 text-pink-500" />
-                                    </button>
-                                    <button className="p-2 bg-white rounded-full shadow-md hover:bg-pink-50">
-                                    <ShoppingCart className="h-5 w-5 text-pink-500" />
-                                    </button>
-                                </div>
-                            </div>
-                            <div className="p-4">
-                                <h3 className="font-medium">{product.name}</h3>
-                                <p className="text-pink-500 font-semibold mt-2"><FormatPrice price={product.price}/></p>
-                            </div>
-                        </motion.div>
-                        ))}
-                    </div>
+                    key={JSON.stringify(products)}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="flex-1"
+                    >
+                        <div className="flex-1">
+                            <h2 className="text-2xl font-bold mb-4">
+                                {isFiltered ? "Kết quả lọc" : "Tất cả sản phẩm"}
+                            </h2>
+
+                            {products.length === 0 ? (
+                                 <div className="flex flex-col items-center justify-center">
+                                 <Image
+                                     src="/dog.gif" 
+                                     alt="Loading Dog"
+                                     width={150}
+                                     height={150}
+                                     className="mb-4"
+                                 />
+                                 <h2 className="text-2xl font-semibold text-gray-700 mb-4">
+                                    Hiện tại chưa có sản phẩm nào!
+                                 </h2>
+                             </div>
+                            ) : (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {currentProducts.map((product, index) => (
+                                    <motion.div
+                                        key={index}
+                                        className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300"
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                    >
+                                        <div className="relative group">
+                                            <div className="aspect-square overflow-hidden">
+                                                <Image
+                                                src={product.imageUrl || "/placeholder.svg"}
+                                                alt={product.name}
+                                                width={300}
+                                                height={300}
+                                                className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                                                />
+                                            </div>
+                                            <div className="absolute top-4 right-4 space-y-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button className="p-2 bg-white rounded-full shadow-md hover:bg-pink-50">
+                                                <Heart className="h-5 w-5 text-pink-500" />
+                                                </button>
+                                                <button className="p-2 bg-white rounded-full shadow-md hover:bg-pink-50">
+                                                <ShoppingCart className="h-5 w-5 text-pink-500" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div className="p-4">
+                                            <h3 className="font-medium">{product.name}</h3>
+                                            <p className="text-pink-500 font-semibold mt-2"><FormatPrice price={product.price}/></p>
+                                        </div> 
+                                    </motion.div>
+                                ))} 
+                            </div> 
+                            )}
+                        </div>
+                        
 
                     {/* Pagination */}
                     <div className="flex justify-center mt-8">
