@@ -1,3 +1,5 @@
+import { ProductAttribute } from "./ProductAttribute";
+
 export interface Product {
     id: number;
     name: string;
@@ -5,5 +7,5 @@ export interface Product {
     price: number;
     imageUrl: string;
     category: string;
+    attributes?: ProductAttribute[];
   }
-  

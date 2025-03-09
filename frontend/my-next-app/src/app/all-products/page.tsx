@@ -14,6 +14,7 @@ import { SliderCustom } from "./slider"
 import FormatPrice from "@/components/ui/FormatPrice";
 import { useSearchParams } from "next/navigation";
 import { Filters } from "@/types/filters";
+import { useRouter } from "next/navigation";
 
 export default function ProductsPage() {
     const [products, setProducts] = useState<Product[]>([])
@@ -27,6 +28,12 @@ export default function ProductsPage() {
 
     const searchParams = useSearchParams()
     const category = searchParams.get("category")
+
+    const router = useRouter()
+
+    const handleProductClick = (productId: number) => {
+        router.push(`product/${productId}`)
+    }
 
     const [filters, setFilters] = useState({
         minPrice: 0,
@@ -111,12 +118,13 @@ export default function ProductsPage() {
         })
     }, [currentPage])
 
-    // Calculate the products to display on the current page
+    
+    
     const indexOfLastProduct = currentPage * productsPerPage
     const indexOfFirstProduct = indexOfLastProduct - productsPerPage
     const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct)
 
-    // Calculate total pages
+    
     const totalPages = Math.ceil(products.length / productsPerPage)
 
     return (
@@ -295,36 +303,43 @@ export default function ProductsPage() {
                             ) : (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {currentProducts.map((product, index) => (
-                                    <motion.div
+                                    <Link href={`product-detail/${product.id} `} key={product.id}>
+                                        <motion.div
                                         key={index}
                                         className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300"
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
                                     >
-                                        <div className="relative group">
-                                            <div className="aspect-square overflow-hidden">
-                                                <Image
-                                                src={product.imageUrl || "/placeholder.svg"}
-                                                alt={product.name}
-                                                width={300}
-                                                height={300}
-                                                className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-                                                />
+                                            <div
+                                                className='relative group'
+                                                onClick={() => handleProductClick(product.id)}
+                                            >
+                                            
+                                                <div className="aspect-square overflow-hidden">
+                                                    <Image
+                                                    src={product.imageUrl || "/placeholder.svg"}
+                                                    alt={product.name}
+                                                    width={300}
+                                                    height={300}
+                                                    className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                                                    />
+                                                </div>
+                                                <div className="absolute top-4 right-4 space-y-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button className="p-2 bg-white rounded-full shadow-md hover:bg-pink-50">
+                                                    <Heart className="h-5 w-5 text-pink-500" />
+                                                    </button>
+                                                    <button className="p-2 bg-white rounded-full shadow-md hover:bg-pink-50">
+                                                    <ShoppingCart className="h-5 w-5 text-pink-500" />
+                                                    </button>
+                                                </div>
                                             </div>
-                                            <div className="absolute top-4 right-4 space-y-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button className="p-2 bg-white rounded-full shadow-md hover:bg-pink-50">
-                                                <Heart className="h-5 w-5 text-pink-500" />
-                                                </button>
-                                                <button className="p-2 bg-white rounded-full shadow-md hover:bg-pink-50">
-                                                <ShoppingCart className="h-5 w-5 text-pink-500" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div className="p-4">
-                                            <h3 className="font-medium">{product.name}</h3>
-                                            <p className="text-pink-500 font-semibold mt-2"><FormatPrice price={product.price}/></p>
-                                        </div> 
-                                    </motion.div>
+                                            <div className="p-4">
+                                                <h3 className="font-medium">{product.name}</h3>
+                                                <p className="text-pink-500 font-semibold mt-2"><FormatPrice price={product.price}/></p>
+                                            </div> 
+                                        </motion.div>
+                                    </Link>
+                                    
                                 ))} 
                             </div> 
                             )}
