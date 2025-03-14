@@ -1,8 +1,11 @@
 package com.example.bikeshop.entity;
 
+import com.example.bikeshop.service.StringListConverter;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 @Entity
 @Table(name="products")
@@ -23,8 +26,9 @@ public class Product {
     @Column(name = "price")
     private Double price;
 
-    @Column(name = "imageUrl")
-    private String imageUrl;
+    @Convert(converter = StringListConverter.class)
+    @Column(name = "image_urls", columnDefinition = "json")
+    private List<String> imageUrls;
 
     @Column(name = "category")
     private String category;
