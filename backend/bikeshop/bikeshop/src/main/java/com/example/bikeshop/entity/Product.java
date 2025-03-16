@@ -36,4 +36,10 @@ public class Product {
     @Column(name = "brand")
     private String brand;
 
+    @Convert(converter = StringListConverter.class)
+    @Column(name = "color", columnDefinition = "json")
+    private List<String> color;
+
+    @Column(name = "quantity")
+    private int quantity;
 }
