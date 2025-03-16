@@ -128,6 +128,7 @@ export default function ProductsPage() {
                 transition={{ duration: 1, ease: "easeOut" }}
                 className="sticky top-0 z-50 bg-white shadow-sm"
             >
+                <header className="fixed top-0 left-0 w-full z-50 bg-white shadow-sm"></header>
                 <div className="container mx-auto px-24 py-4">
                     <div className="flex items-center justify-between">
                         <Link href="/home" className="text-3xl font-extrabold text-pink-500">
@@ -301,29 +302,31 @@ export default function ProductsPage() {
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
                                     >
-                                        <div className="relative group">
-                                            <div className="aspect-square overflow-hidden">
-                                                <Image
-                                                src={product.imageUrls[0] || "/placeholder.svg"}
-                                                alt={product.name}
-                                                width={300}
-                                                height={300}
-                                                className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-                                                />
+                                        <Link href={`/product-detail/${product.id}`}>
+                                            <div className="relative group">
+                                                <div className="aspect-square overflow-hidden">
+                                                    <Image
+                                                    src={product.imageUrls[0] || "/placeholder.svg"}
+                                                    alt={product.name}
+                                                    width={300}
+                                                    height={300}
+                                                    className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                                                    />
+                                                </div>
+                                                <div className="absolute top-4 right-4 space-y-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button className="p-2 bg-white rounded-full shadow-md hover:bg-pink-50">
+                                                    <Heart className="h-5 w-5 text-pink-500" />
+                                                    </button>
+                                                    <button className="p-2 bg-white rounded-full shadow-md hover:bg-pink-50">
+                                                    <ShoppingCart className="h-5 w-5 text-pink-500" />
+                                                    </button>
+                                                </div>
                                             </div>
-                                            <div className="absolute top-4 right-4 space-y-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button className="p-2 bg-white rounded-full shadow-md hover:bg-pink-50">
-                                                <Heart className="h-5 w-5 text-pink-500" />
-                                                </button>
-                                                <button className="p-2 bg-white rounded-full shadow-md hover:bg-pink-50">
-                                                <ShoppingCart className="h-5 w-5 text-pink-500" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div className="p-4">
-                                            <h3 className="font-medium">{product.name}</h3>
-                                            <p className="text-pink-500 font-semibold mt-2"><FormatPrice price={product.price}/></p>
-                                        </div> 
+                                            <div className="p-4">
+                                                <h3 className="font-medium">{product.name}</h3>
+                                                <p className="text-pink-500 font-semibold mt-2"><FormatPrice price={product.price}/></p>
+                                            </div> 
+                                        </Link>
                                     </motion.div>
                                 ))} 
                             </div> 
