@@ -41,5 +41,5 @@ public class Product {
     private List<String> color;
 
     @Column(name = "quantity")
-    private int quantity;
+    private Integer quantity;
 }
