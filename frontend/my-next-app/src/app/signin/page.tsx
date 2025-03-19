@@ -92,7 +92,7 @@ export default function LoginPage() {
 
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Button
-                  className="w-full bg-pink-500 hover:bg-pink-600 text-white py-3 rounded-lg transition-all duration-200"
+                  className="w-full bg-pink-500 hover:bg-pink-600 font-semibold text-white py-3 rounded-lg transition-all duration-200"
                   disabled={isLoading}
                 >
                   {isLoading ? "    Đang đăng nhập..." : "ĐĂNG NHẬP"}

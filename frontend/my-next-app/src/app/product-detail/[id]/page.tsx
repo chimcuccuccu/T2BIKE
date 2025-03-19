@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
-import { Heart, Minus, Plus, MessageCircle, Check, Star, Truck, RefreshCw, Search, ShoppingCart, Facebook } from "lucide-react"
+import { Heart, Minus, Plus, MessageCircle, Check, Star, Truck, RefreshCw, Search, ShoppingCart, Facebook, ChevronUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -631,6 +631,17 @@ export default function ProductDetail() {
                         </div>
                     </div>
             </footer>
+
+            <motion.button
+                className="fixed bottom-6 right-6 bg-pink-500 text-white rounded-full p-4 shadow-lg z-40"
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: isScrolled ? 1 : 0, scale: isScrolled ? 1 : 0 }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            >
+                <ChevronUp className="w-6 h-6" />
+            </motion.button>
         </div>
     )
 }
