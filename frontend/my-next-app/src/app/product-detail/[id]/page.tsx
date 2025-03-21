@@ -4,7 +4,12 @@ import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
-import { Heart, Minus, Plus, MessageCircle, Check, Star, Truck, RefreshCw, Search, ShoppingCart, Facebook, ChevronUp } from "lucide-react"
+import { Heart, Minus, Plus,
+         MessageCircle, Check, 
+         Star, Truck, RefreshCw, 
+         Search, ShoppingCart, Home,
+         ChevronRight, Facebook, ChevronUp, ZoomIn, ShieldCheck,
+         ArrowLeft, ArrowRight, Share2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -30,10 +35,12 @@ export default function ProductDetail() {
     const [lightboxOpen, setLightboxOpen] = useState(false)
     const [isWishlisted, setIsWishlisted] = useState(false)
     const [activeTab, setActiveTab] = useState("info")
+    const [currentImage, setCurrentImage] = useState(0)
 
     const increaseQuantity = () => setQuantity((prev) => prev + 1)
     const decreaseQuantity = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1))
     
+  
     const toggleWishlist = () => {
         setIsWishlisted((prev) => !prev)
       }
@@ -48,6 +55,15 @@ export default function ProductDetail() {
     const imageScale = useTransform(scrollYProgress, [0, 1], [1, 0.9])
     const imageOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0.6])
 
+    const nextImage = () => {
+        setCurrentImage((prev) => (prev === (product?.imageUrls?.length ?? 0) - 1 ? 0 : prev + 1))
+    }
+    
+      const prevImage = () => {
+        setCurrentImage((prev) => (prev === 0 ? (product?.imageUrls?.length ?? 0) - 1 : prev - 1))
+    }
+
+      
     useEffect(() => {
         const handleScroll = () => {
           setIsScrolled(window.scrollY > 100)
@@ -96,7 +112,7 @@ export default function ProductDetail() {
     );
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-pink-50">
            {/* Header */}
            <motion.header
                 initial={{ opacity: 0, y: -50 }} // Bắt đầu mờ và cao hơn vị trí ban đầu
@@ -154,10 +170,29 @@ export default function ProductDetail() {
                             </div>
                         </div>
                     </div>
+
+                    {/* Breadcrumb */}
+                    {/* Header with breadcrumb */}
+                    <div className="bg-pink-100 shadow-sm">
+                        <div className="container mx-auto px-4 py-3">
+                            <div className="flex items-center text-sm text-gray-500">
+                                <Link href="/" className="flex items-center hover:text-pink-500">
+                                <Home className="h-4 w-4 mr-1" />
+                                <span>Trang chủ</span>
+                                </Link>
+                                <ChevronRight className="h-4 w-4 mx-2" />
+                                <Link href="/category" className="hover:text-pink-500">
+                                    {product.category}
+                                </Link>
+                                <ChevronRight className="h-4 w-4 mx-2" />
+                                <span className="text-gray-700 font-medium">{product.name}</span>
+                            </div>
+                        </div>
+                    </div>
                 </header>
             </motion.header>
         
-            <div className="container mx-auto px-4 -mt-20 max-w-5xl">
+            <div className="container mx-auto px-4 mt-10 max-w-5xl">
                 <AnimatePresence>
                     {isScrolled && (
                     <motion.div
@@ -180,469 +215,304 @@ export default function ProductDetail() {
                     )}
                 </AnimatePresence>
 
-                {/* Breadcrumb */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="container mx-auto px-4 py-4"
-                >
-                    <div className="text-sm breadcrumbs text-gray-600 pt-20">
-                        <span>Trang chủ</span>
-                        <span className="mx-2">/</span>
-                        <span>{product.name}</span>
-                    </div>
-                </motion.div>
-
                 {/* Product Section */}
-                <div className="grid md:grid-cols-2 gap-8 mb-12">
+                <div className="container mx-auto px-4 py-8 -mt-10">
+                    <div className=" grid grid-cols-1 lg:grid-cols-2 gap-8 bg-white rounded-xl shadow-sm overflow-hidden">
+                        {/* Product Images */}
+                        <div className="p-6">
+                        <div className="relative rounded-lg overflow-hidden bg-gray-100 aspect-square mb-4 group">
+                            
+                            {/* Nút chuyển ảnh trái */}
+                            <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white shadow-md"
+                            onClick={prevImage}
+                            >
+                            <ArrowLeft className="h-5 w-5" />
+                            </Button>
 
-                    {/* Product Images */}
-                    <div className="p-4">
-                    <motion.div
-                        className="relative aspect-square rounded-lg overflow-hidden mb-4 cursor-pointer group"
-                        style={{ scale: imageScale, opacity: imageOpacity }}
-                        whileHover={{ scale: 1.03 }}
-                        transition={{ duration: 0.3 }}
-                        onClick={() => setLightboxOpen(true)}
-                    >
-                        <Image
-                        src={product.imageUrls[0] || "/placeholder.svg"}
-                        alt="Xe đạp ABC"
-                        fill
-                        className="object-contain transition-transform duration-500 group-hover:scale-110"
-                        priority
-                        />
-                        <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <span className="bg-white/80 text-black px-4 py-2 rounded-full text-sm font-medium backdrop-blur-sm">
-                            Nhấn để phóng to
-                        </span>
-                        </div>
-                    </motion.div>
-                    
-                    <div className="grid grid-cols-4 gap-2">
-                        {product.imageUrls.map((image, index) => (
-                        <motion.div
-                            key={index}
-                            className={cn(
-                            "border rounded-lg overflow-hidden cursor-pointer relative aspect-square",
-                            selectedImage === index ? "border-gray-400" : "border-gray-200",
-                            )}
-                            onClick={() => setSelectedImage(index)}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                        >
+                            {/* Ảnh chính */}
                             <Image
-                            src={image || "/placeholder.svg"}
-                            alt={`Xe đạp ABC ${index + 1}`}
-                            fill
-                            className="object-contain p-1"
+                            src={product.imageUrls[currentImage] || "/placeholder.svg"}
+                            alt="Xe tay thang"
+                            width={600}
+                            height={600}
+                            className="object-contain transition-transform duration-300 hover:scale-105 cursor-pointer"
+                            onClick={() => setLightboxOpen(true)}
                             />
-                            {selectedImage === index && (
-                            <motion.div
-                                className="absolute inset-0 border-2 border-pink-500 rounded-lg"
-                                layoutId="selectedImageOutline"
-                                transition={{ type: "spring", damping: 20, stiffness: 300 }}
-                            />
-                            )}
-                            </motion.div>
-                            ))}
 
-                            <ImageLightbox
+                            {/* Nút chuyển ảnh phải */}
+                            <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white shadow-md"
+                            onClick={nextImage}
+                            >
+                            <ArrowRight className="h-5 w-5" />
+                            </Button>
+
+                            {/* Nút phóng to */}
+                            <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute top-4 right-4 z-10 bg-white/80 hover:bg-white shadow-md p-2"
+                            onClick={() => setLightboxOpen(true)}
+                            >
+                            <ZoomIn className="h-5 w-5" />
+                            </Button>
+
+                            {/* Badge BestSeller */}
+                            <Badge className="absolute top-4 left-4 bg-pink-500 hover:bg-pink-600">
+                            BestSeller
+                            </Badge>
+                        </div>
+
+                        {/* Thumbnail List */}
+                        <div className="flex space-x-2 overflow-x-auto pb-2">
+                            {product.imageUrls.map((img, index) => (
+                            <div
+                                key={index}
+                                className={`border-2 rounded cursor-pointer flex-shrink-0 transition-all duration-300 ${
+                                currentImage === index ? "border-pink-500 opacity-100" : "border-gray-200 opacity-60 hover:opacity-100"
+                                }`}
+                                onClick={() => setCurrentImage(index)}
+                            >
+                                <Image
+                                src={img || "/placeholder.svg"}
+                                alt={`Thumbnail ${index + 1}`}
+                                width={80}
+                                height={80}
+                                className="h-20 w-20 object-cover"
+                                />
+                            </div>
+                            ))}
+                        </div>
+                        
+                        <ImageLightbox
                             isOpen={lightboxOpen}
                             onClose={() => setLightboxOpen(false)}
                             src={product.imageUrls[selectedImage] || "/placeholder.svg"}
                             alt="Xe đạp ABC"
+                        />
+                    </div>
+                    <div className="p-6 lg:p-8 flex flex-col">
+                        <div className="flex justify-between items-start">
+                        <div>
+                            <h1 className="text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
+                            <div className="flex items-center gap-4 mb-2">
+                            <div className="flex">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                    key={star}
+                                    className={`h-5 w-5 ${star <= 4 ? "fill-amber-400 text-amber-400" : "text-gray-300"}`}
+                                />
+                                ))}
+                            </div>
+                            <span className="text-sm text-gray-500">36 đánh giá</span>
+                            </div>
+                            <p className="text-sm text-gray-500 mb-4">Mã sản phẩm: TT012</p>
+                        </div>
+                        <Button variant="ghost" size="icon" className="rounded-full">
+                            <Share2 className="h-5 w-5" />
+                        </Button>
+                        </div>
+
+                        <p className="text-3xl font-bold text-gray-900"><FormatPrice price={product.price}/></p>
+                        <p className="text-sm text-gray-500 mt-1">Giá đã bao gồm VAT</p>
+                        <Separator className="my-2" />
+
+                    {/* Color selection */}
+                    <motion.div
+                    className="mb-6"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    >
+                        <h3 className="font-semibold mb-2">Màu</h3>
+                        <div className="flex gap-3">
+                            {product.color.map((color) => (
+                                <motion.div
+                                key={color}
+                                className={cn(
+                                    "w-8 h-8 rounded-full cursor-pointer flex items-center justify-center border-2",
+                                    selectedColor === color ? "border-gray-400" : "border-transparent",
+                                )}
+                                onClick={() => setSelectedColor(color)}
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                >
+                                <div className="w-6 h-6 rounded-full" style={{ backgroundColor: color }} />
+                                </motion.div>
+                            ))}
+                        </div>
+                    </motion.div>
+
+                    {/* Quantity */}
+                    <div className="mb-6">
+                        <div className="flex justify-between mb-2">
+                            <h3 className="text-sm font-medium text-gray-900">Số lượng</h3>
+                            <p className="text-sm text-gray-500">Còn lại: {product.quantity - quantity}</p>
+                        </div>
+                        <div className="flex items-center">
+                            <button
+                            className="w-10 h-10 rounded-l-md border border-gray-300 flex items-center justify-center bg-gray-50 hover:bg-gray-100"
+                            onClick={decreaseQuantity}
+                            disabled={quantity === 1}
+                            >
+                            <span className="text-xl font-medium">−</span>
+                            </button>
+                            <input
+                            type="text"
+                            value={quantity}
+                            readOnly
+                            className="w-14 h-10 border-t border-b border-gray-300 text-center"
                             />
+                            <button
+                            className="w-10 h-10 rounded-r-md border border-gray-300 flex items-center justify-center bg-gray-50 hover:bg-gray-100"
+                            onClick={increaseQuantity}
+                            disabled={quantity >= product.quantity}
+                            >
+                            <span className="text-xl font-medium">+</span>
+                            </button>
                         </div>
                     </div>
 
-                    {/* Product Info */}
-                    <motion.div
-                        initial= {{ opacity: 0, x: 20 }}
-                        animate= {{ opacity: 1, x: 0 }}
-                        transition= {{ duration: 0.5 }}
-                        className="space-y-6"
-                    >
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-3 mb-2">
-                                <Badge variant="secondary" className="bg-pink-100 text-pink-700">
-                                    BestSeller
-                                </Badge>
+                    {/* Action buttons */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+                        <Button className="h-12 text-base font-medium bg-pink-500 hover:bg-pink-600">Mua ngay</Button>
+                        <Button
+                            variant="outline"
+                            className="h-12 text-base font-medium border-pink-500 text-pink-500 hover:bg-pink-50"
+                        >
+                            Thêm vào giỏ hàng
+                        </Button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 mb-6">
+                        <Button
+                            variant="secondary"
+                            className="h-12 text-base font-medium bg-pink-100 hover:bg-pink-200 text-pink-700"
+                        >
+                            Trả góp 0%
+                        </Button>
+                        <Button
+                            variant="secondary"
+                            className="h-12 text-base font-medium flex items-center justify-center gap-2 bg-pink-100 hover:bg-pink-200 text-pink-700"
+                        >
+                            <Heart className="h-5 w-5" />
+                            Yêu thích
+                        </Button>
+                    </div>
+
+                    {/* Benefits */}
+                    <div className="bg-pink-50 rounded-lg p-4 space-y-3">
+                        <div className="flex items-center gap-3">
+                            <Truck className="h-5 w-5 text-pink-500" />
+                            <div>
+                            <p className="text-sm font-medium">Giao hàng miễn phí</p>
+                            <p className="text-xs text-gray-500">Cho đơn hàng từ 2.000.000đ</p>
                             </div>
-                            <h1 className="text-3xl font-bold">
-                                {product.name}
-                            </h1>
-                            <p className="text-gray-500 text-sm">
-                                Mã sản phẩm: TT012
-                            </p>
                         </div>
-                        <motion.div
-                            className="text-3xl font-bold text-black mb-6"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.3 }}
-                        >
-                            <FormatPrice price={product.price}/>
-                        </motion.div>
-                        
-                    {/* Color */}
-                    <motion.div
-                        className="mb-6"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4 }}
-                        >
-                            <h3 className="font-semibold mb-2">Màu</h3>
-                            <div className="flex gap-3">
-                                {product.color.map((color) => (
-                                    <motion.div
-                                    key={color}
-                                    className={cn(
-                                        "w-8 h-8 rounded-full cursor-pointer flex items-center justify-center border-2",
-                                        selectedColor === color ? "border-gray-400" : "border-transparent",
-                                    )}
-                                    onClick={() => setSelectedColor(color)}
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    >
-                                    <div className="w-6 h-6 rounded-full" style={{ backgroundColor: color }} />
-                                    </motion.div>
-                                ))}
+                        <div className="flex items-center gap-3">
+                            <ShieldCheck className="h-5 w-5 text-pink-500" />
+                            <div>
+                                <p className="text-sm font-medium">Bảo hành chính hãng 12 tháng</p>
+                                <p className="text-xs text-gray-500">1 đổi 1 trong 30 ngày đầu tiên</p>
                             </div>
-                        </motion.div>
-
-                        {/* Quantity */}
-                        <motion.div
-                            className="mb-6"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.5 }}
-                        >
-                            <h3 className="font-semibold mb-2">Số lượng: {product.quantity} (còn lại: {product.quantity - quantity})</h3>
-                            <div className="flex items-center">
-                            <motion.div whileTap={{ scale: 0.9 }}>
-                                <Button
-                                variant="outline"
-                                size="icon"
-                                className="rounded-md h-10 w-10 relative overflow-hidden"
-                                onClick={decreaseQuantity}
-                                disabled={quantity === 1}
-                                >
-                                <Minus className="h-4 w-4 relative z-10" />
-                                <motion.div
-                                    className="absolute inset-0 bg-gray-100"
-                                    initial={{ scale: 0, opacity: 0 }}
-                                    whileTap={{ scale: 4, opacity: 1 }}
-                                    transition={{ duration: 0.5 }}
-                                />
-                                </Button>
-                            </motion.div>
-                            <span className="w-12 text-center">{quantity}</span>
-                            <motion.div whileTap={{ scale: 0.9 }}>
-                                <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={increaseQuantity}
-                                disabled={quantity >= product.quantity}
-                                className="rounded-md h-10 w-10 relative overflow-hidden"
-                                >
-                                <Plus className="h-4 w-4 relative z-10" />
-                                <motion.div
-                                    className="absolute inset-0 bg-gray-100"
-                                    initial={{ scale: 0, opacity: 0 }}
-                                    whileTap={{ scale: 4, opacity: 1 }}
-                                    transition={{ duration: 0.5 }}
-                                />
-                                </Button>
-                            </motion.div>
-                            </div>
-                        </motion.div>
-
-                        {/* Button */}
-                        <div className="grid gap-3 mb-6">
-                        <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.6 }}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        >
-                            <div className="flex justify-between">
-                                <Button className="flex items-center bg-white hover:bg-gray-100 text-black border border-gray-300 rounded-md h-12 w-[420px] relative overflow-hidden group">
-                                <span className="relative z-10">Thêm vào giỏ hàng</span>
-                                <motion.div
-                                className="absolute inset-0 bg-gray-200"
-                                initial={{ x: "-100%" }}
-                                whileHover={{ x: 0 }}
-                                transition={{ duration: 0.3 }}
-                                />
-                                </Button>
-                                <motion.button
-                                className={cn("self-end p-3 rounded-full relative", isWishlisted ? "bg-pink-100" : "bg-gray-100")}
-                                onClick={toggleWishlist}
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 1 }}
-                            >
-                                <Heart
-                                className={cn(
-                                    "w-6 h-6 transition-colors relative z-10",
-                                    isWishlisted ? "fill-pink-500 stroke-pink-500" : "stroke-gray-500",
-                                )}
-                                />
-                                {isWishlisted && (
-                                <motion.div
-                                    className="absolute inset-0 rounded-full"
-                                    initial={{ scale: 0 }}
-                                    animate={{ scale: [0, 1.5, 1] }}
-                                    transition={{ duration: 0.5 }}
-                                >
-                                    <div className="absolute inset-0 rounded-full bg-pink-200 animate-ping opacity-75"></div>
-                                </motion.div>
-                                )}
-                                </motion.button>
-                                
-                            </div>
-                        </motion.div>
-
-                        <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.7 }}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        >
-                            <Button className="bg-[#FF5F9C] hover:bg-pink-600 text-white font-semibold rounded-md h-12 w-full text-base relative overflow-hidden group">
-                                <span className="relative z-10">Mua ngay</span>
-                                <motion.div
-                                className="absolute inset-0 bg-pink-600"
-                                initial={{ x: "-100%" }}
-                                whileHover={{ x: 0 }}
-                                transition={{ duration: 0.3 }}
-                                />
-                            </Button>
-                            </motion.div>
-
-                            <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.8 }}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            >
-                            <Button
-                                variant="outline"
-                                className="bg-[#FEA500] border-orange-500 text-white font-semibold  hover:bg-orange-50 rounded-md h-12 w-full text-base relative overflow-hidden group"
-                            >
-                                <span className="relative z-10">Trả góp 0%</span>
-                                <motion.div
-                                className="absolute inset-0 bg-orange-50"
-                                initial={{ x: "-100%" }}
-                                whileHover={{ x: 0 }}
-                                transition={{ duration: 0.3 }}
-                                />
-                            </Button>
-                            </motion.div>
-
-                            <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.9 }}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            >
-                            <Button
-                                variant="outline"
-                                className="border-teal-500 bg-[#73C7C7] text-white hover:bg-teal-50 rounded-md font-semibold h-12 w-full text-base relative overflow-hidden group"
-                            >
-                                <span className="relative z-10">Thu lại lên đời</span>
-                                <motion.div
-                                className="absolute inset-0 bg-teal-50"
-                                initial={{ x: "-100%" }}
-                                whileHover={{ x: 0 }}
-                                transition={{ duration: 0.3 }}
-                                />
-                            </Button>
-                            </motion.div>
-                        </div>            
-                    </motion.div>
+                        </div>
+                        </div>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Info */}
-                <div className="mt-8">
-                    <Tabs defaultValue="info" value={activeTab} onValueChange={setActiveTab}>
-                        <TabsList className="grid grid-cols-3 mb-4">
-                            {["info", "specs", "qa"].map((tab) => (
-                            <TabsTrigger key={tab} value={tab} className="text-base relative overflow-hidden group">
-                                {tab === "info" && "Thông tin sản phẩm"}
-                                {tab === "specs" && "Thông số kỹ thuật"}
-                                {tab === "qa" && "Hỏi và đáp"}
-                                {activeTab === tab && (
-                                <motion.div
-                                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-pink-500"
-                                    layoutId="activeTabIndicator"
-                                    transition={{ type: "spring", damping: 20, stiffness: 300 }}
-                                />
-                                )}
-                                <motion.div
-                                className="absolute inset-0 bg-gray-100"
-                                initial={{ y: "100%" }}
-                                whileHover={{ y: activeTab === tab ? "100%" : 0 }}
-                                transition={{ duration: 0.3 }}
-                                />
-                            </TabsTrigger>
-                            ))}
+                <div className="mt-8 bg-white rounded-xl shadow-sm overflow-hidden">
+                    <Tabs defaultValue="description">
+                        <TabsList className="w-full border-b bg-gray-50 p-0 h-auto">
+                        <TabsTrigger
+                            value="description"
+                            className="py-4 px-6 data-[state=active]:border-b-2 data-[state=active]:border-pink-500 rounded-none"
+                        >
+                            Mô tả sản phẩm
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="specs"
+                            className="py-4 px-6 data-[state=active]:border-b-2 data-[state=active]:border-pink-500 rounded-none"
+                        >
+                            Thông số kỹ thuật
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="reviews"
+                            className="py-4 px-6 data-[state=active]:border-b-2 data-[state=active]:border-pink-500 rounded-none"
+                        >
+                            Đánh giá (36)
+                        </TabsTrigger>
                         </TabsList>
-
-                        <div>
-                            <TabsContent value="info" className="bg-white p-6 rounded-xl shadow-sm">
-                            <motion.h2
-                                className="text-xl font-bold text-center mb-6"
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.1 }}
-                            >
-                                Thông tin sản phẩm
-                            </motion.h2>
-                            <div className="space-y-4">
-                                <motion.p
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.2 }}
-                                >
-                                {product.description}
-                                </motion.p>
+                        <TabsContent value="description" className="p-6">
+                            <div className="prose max-w-none">
+                                    {product.description}
                             </div>
-                            </TabsContent>
-
-                            <TabsContent value="specs" className="bg-white rounded-xl shadow-sm">
-                            <ProductSpecs />
-                            </TabsContent>
-
-                            <TabsContent value="qa" className="bg-white rounded-xl shadow-sm">
-                            <QuestionsAnswers />
-                            </TabsContent>
+                        </TabsContent>
+                        <TabsContent value="specs" className="p-6">
+                            <ProductSpecs></ProductSpecs>
+                        </TabsContent>
+                        <TabsContent value="reviews" className="p-6">
+                        <div className="flex items-center justify-between mb-6">
+                            <div>
+                            <h3 className="font-medium text-lg">Đánh giá từ khách hàng</h3>
+                            <div className="flex items-center mt-2">
+                                <div className="flex">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                    <Star
+                                    key={star}
+                                    className={`h-5 w-5 ${star <= 4 ? "fill-amber-400 text-amber-400" : "text-gray-300"}`}
+                                    />
+                                ))}
+                                </div>
+                                <span className="ml-2 text-sm text-gray-500">4.0/5 (36 đánh giá)</span>
+                            </div>
+                            </div>
+                            <Button className="bg-pink-500 hover:bg-pink-600">Viết đánh giá</Button>
                         </div>
+
+                        <Separator className="my-6" />
+
+                        <div className="space-y-6">
+                            {[1, 2, 3].map((review) => (
+                            <div key={review} className="pb-6 border-b border-gray-100 last:border-0">
+                                <div className="flex justify-between mb-2">
+                                <div>
+                                    <h4 className="font-medium">Nguyễn Văn A</h4>
+                                    <div className="flex mt-1">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <Star
+                                        key={star}
+                                        className={`h-4 w-4 ${star <= 5 ? "fill-amber-400 text-amber-400" : "text-gray-300"}`}
+                                        />
+                                    ))}
+                                    </div>
+                                </div>
+                                <span className="text-sm text-gray-500">12/03/2023</span>
+                                </div>
+                                <p className="text-gray-600 mt-2">
+                                Sản phẩm rất tốt, đúng như mô tả. Xe chạy êm, phanh nhạy và chuyển số mượt mà. Giao hàng nhanh và
+                                đóng gói cẩn thận. Rất hài lòng với sản phẩm này!
+                                </p>
+                            </div>
+                            ))}
+                        </div>
+
+                        <div className="mt-6 text-center">
+                            <Button variant="outline" className="border-pink-500 text-pink-500 hover:bg-pink-50">
+                            Xem thêm đánh giá
+                            </Button>
+                        </div>
+                        </TabsContent>
                     </Tabs>
                 </div>
             </div>
-
-            {/* Footer */}
-            <footer className="bg-white mt-16 border-t max-w-screen-2xl mx-auto ">
-                <div className="border-t border-pink-100 bg-[#FFE4EF]">
-                    <div className="container mx-auto px-4 py-8">
-                        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                            <div className="flex-1 w-full max-w-xl">
-                                <div className="flex gap-2">
-                                    <Input type="email" placeholder="Nhập Email Để Tư Vấn" className="bg-white" />
-                                    <Button className="bg-pink-500 hover:bg-pink-600 text-white min-w-[120px]">SUBSCRIBE</Button>
-                                </div>
-                            </div>
-                            <p className="text-gray-600 text-sm">Đăng ký để nhận được thông báo mới nhất từ T2BIKE</p>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Main Footer */}
-                <div className="border-t border-pink-100">
-                    <div className="container mx-auto px-4 py-12">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
-                            {/* Column 1 - Logo & Contact */}
-                            <div className="lg:col-span-1">
-                                <Link href="/" className="text-3xl font-extrabold text-pink-500">
-                                    T2BIKE
-                                </Link>
-                                <div className="mt-4 space-y-2">
-                                    <h3 className="font-semibold">LIÊN HỆ</h3>
-                                    <p className="text-sm text-gray-600">Số Điện Thoại: 99988765</p>
-                                    <p className="text-sm text-gray-600">Email: Greengrocery9@Gmail.Com</p>
-                                </div>
-                                {/* Payment Methods */}
-                                <div className="mt-6 flex gap-2">
-                                    <Image src="/placeholder.svg?height=30&width=45" alt="Visa" width={45} height={30} className="h-8" />
-                                    <Image
-                                    src="/placeholder.svg?height=30&width=45"
-                                    alt="Mastercard"
-                                    width={45}
-                                    height={30}
-                                    className="h-8"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Column 2 - Social Media */}
-                            <div>
-                                <h3 className="font-semibold mb-4">MẠNG XÃ HỘI</h3>
-                                <div className="space-y-3">
-                                    <Link href="#" className="flex items-center gap-2 text-gray-600 hover:text-pink-500 transition-colors">
-                                    <Facebook size={20} />
-                                    <span>FACEBOOK</span>
-                                    </Link>
-                                </div>
-                            </div>
-
-                            {/* Column 3 - Information */}
-                            <div>
-                                <h3 className="font-semibold mb-4">THÔNG TIN</h3>
-                                <div className="space-y-2">
-                                    {["Trang chủ", "Cửa hàng", "Về chúng tôi", "FAQ", "Liên hệ"].map((item) => (
-                                    <Link key={item} href="#" className="block text-gray-600 hover:text-pink-500 transition-colors">
-                                        {item}
-                                    </Link>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Column 4 - My Accounts */}
-                            <div>
-                                <h3 className="font-semibold mb-4">TÀI KHOẢN CỦA TÔI</h3>
-                                <div className="space-y-2">
-                                    {["Tài khoản của tôi", "Yêu thích", "Giỏ hàng"].map((item) => (
-                                    <Link key={item} href="#" className="block text-gray-600 hover:text-pink-500 transition-colors">
-                                        {item}
-                                    </Link>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Column 5 - Categories */}
-                            <div>
-                                <h3 className="font-semibold mb-4">DANH MỤC SẢN PHẨM</h3>
-                                <div className="space-y-2">
-                                    {["Xe tay thẳng", "Xe tay cong", "Xe mini", "Xe gấp", "Quần áo", "Phụ kiện khác"].map((item) => (
-                                    <Link key={item} href="#" className="block text-gray-600 hover:text-pink-500 transition-colors">
-                                        {item}
-                                    </Link>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                    {/* Copyright */}
-                    <div className="border-t border-pink-100">
-                        <div className="container mx-auto px-4 py-4">
-                        <p className="text-center text-sm text-gray-600">Copyright © 2024 T2BIKE.</p>
-                        </div>
-                    </div>
-            </footer>
-
-            <motion.button
-                className="fixed bottom-6 right-6 bg-pink-500 text-white rounded-full p-4 shadow-lg z-40"
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: isScrolled ? 1 : 0, scale: isScrolled ? 1 : 0 }}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            >
-                <ChevronUp className="w-6 h-6" />
-            </motion.button>
         </div>
-    )
+    );
 }
 

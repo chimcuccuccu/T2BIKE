@@ -6,6 +6,7 @@ import { useParams } from "next/navigation"
 import axios from "axios"
 import { Product } from "@/types/product"
 import { ProductAttribute } from "@/types/product-attribute"
+import { TabsContent } from "./ui/tabs"
 
 export default function ProductSpecs() {
     const [product, setProduct] = useState<Product | null>(null);
@@ -30,6 +31,10 @@ export default function ProductSpecs() {
     const containerRef = useRef(null)
     const isInView = useInView(containerRef, { once: true, amount: 0.2 })
 
+    const midIndex = Math.ceil((product?.attributes?.length ?? 0) / 2);
+    const leftColumn = product?.attributes?.slice(0, midIndex) ?? [];
+    const rightColumn = product?.attributes?.slice(midIndex) ?? [];
+
     return (
         <div className="p-6" ref={containerRef}>
         <motion.h2
@@ -46,21 +51,38 @@ export default function ProductSpecs() {
             animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ delay: 0.2 }}
         >
-            {product?.attributes?.map((attr, index) => (
-            <motion.div
-                key={index}
-                className={`grid grid-cols-2 ${index % 2 === 1 ? "bg-pink-50" : "bg-white"}`}
-                initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
-                animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
-                transition={{ delay: 0.1 * (index + 1) }}
-                whileHover={{ backgroundColor: index % 2 === 1 ? "rgb(253, 232, 242)" : "rgb(249, 250, 251)",
-                transition: { duration: 0 } 
-                }}
-            >
-                <div className="p-4 font-medium border-r border-gray-200">{attr.attributeName}</div>
-                <div className="p-4">{attr.attributeValue}</div>
-            </motion.div>
-            ))}
+
+            <TabsContent value="specs" className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Cột 1 */}
+              <div>
+                <table className="w-full border-collapse">
+                  <tbody>
+                    {leftColumn.map((item, index) => (
+                      <tr key={index} className="border-b">
+                        <td className="py-2 text-gray-500">{item.attributeName}</td>
+                        <td className="py-2 font-medium">{item.attributeValue}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Cột 2 */}
+              <div>
+                <table className="w-full border-collapse">
+                  <tbody>
+                    {rightColumn.map((item, index) => (
+                      <tr key={index} className="border-b">
+                        <td className="py-2 text-gray-500">{item.attributeName}</td>
+                        <td className="py-2 font-medium">{item.attributeValue}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </TabsContent>
         </motion.div>
     </div>
   )
