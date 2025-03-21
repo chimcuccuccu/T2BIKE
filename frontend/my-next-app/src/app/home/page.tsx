@@ -85,14 +85,22 @@ export default function Home() {
                             <button className="p-2 hover:text-pink-500 transition-colors">
                                 <ShoppingCart className="h-6 w-6" />
                             </button>
-                            <div className='border-2 border-gray-400 p-1.5'>
-                                <Link href="/signin" className="text-black hover:text-pink-500 transition-colors">
-                                Đăng nhập
-                                </Link>
+                            <div className="flex items-center space-x-5">
+                            <Button
+                                variant="outline"
+                                size="lg"
+                                className="hidden md:inline-flex border-pink-300 text-pink-500 hover:bg-pink-50"
+                            >
+                                Login
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="lg"
+                                className="hidden md:inline-flex border-pink-300 text-pink-500 hover:bg-pink-50"
+                            >
+                                Sign up
+                            </Button>
                             </div>
-                            <Link href="/signup" className="text-black hover:text-pink-500 transition-colors">
-                                Đăng ký
-                            </Link>
                             </div>
                         </div>
                     </div>
