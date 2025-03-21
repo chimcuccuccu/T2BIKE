@@ -89,16 +89,16 @@ export default function Home() {
                             <Button
                                 variant="outline"
                                 size="lg"
-                                className="hidden md:inline-flex border-pink-300 text-pink-500 hover:bg-pink-50"
+                                className="hidden md:inline-flex w-24 border-pink-300 text-pink-500 hover:bg-pink-50"
                             >
-                                Login
+                                Đăng nhập
                             </Button>
                             <Button
                                 variant="outline"
                                 size="lg"
-                                className="hidden md:inline-flex border-pink-300 text-pink-500 hover:bg-pink-50"
+                                className="hidden md:inline-flex w-24 border-pink-300 text-pink-500 hover:bg-pink-50"
                             >
-                                Sign up
+                                Đăng ký
                             </Button>
                             </div>
                             </div>
