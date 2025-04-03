@@ -1,10 +1,13 @@
 package com.example.bikeshop.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "users", uniqueConstraints = {
@@ -30,15 +33,19 @@ public class User {
     @Column(name = "password")
     private String password;
 
-    @Column(name = "email", nullable = false)
-    private String email;
-
     @Column(name = "gender")
     private String gender;
 
-    @Column(name = "phone")
+    @JsonFormat(pattern = "dd-MM-yyyy")
+    @Column(name = "birthDate")
+    private LocalDate birthDate;
+
+    @Column(name = "email", nullable = true)
+    private String email;
+
+    @Column(name = "phone", nullable = true)
     private String phone;
 
-    @Column(name = "address")
+    @Column(name = "address", nullable = true)
     private String address;
 }
