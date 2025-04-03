@@ -15,15 +15,22 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
     public User registerUser(UserDTO userDTO) {
+        if (userRepository.existsByUsername(userDTO.getUsername())) {
+            throw new IllegalArgumentException("Username đã tồn tại!");
+        }
+
         User user = new User();
         user.setUsername(userDTO.getUsername());
-        user.setPassword(userDTO.getPassword()); // Chưa mã hóa mật khẩu
+        user.setPassword(userDTO.getPassword()); // Nên mã hóa mật khẩu trước khi lưu
         user.setFullName(userDTO.getFullName());
-        user.setEmail(userDTO.getEmail());
         user.setGender(userDTO.getGender());
-        user.setPhone(userDTO.getPhone());
-        user.setAddress(userDTO.getAddress());
+        user.setBirthDate(userDTO.getBirthDate());
+
         return userRepository.save(user);
     }
 

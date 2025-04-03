@@ -43,7 +43,7 @@ export default function ContactSection() {
                             </Link>
 
                             <nav className="hidden md:flex items-center space-x-9">
-                                                 <Link href="/home" className="text-black hover:text-pink-500 transition-colors font-bold">
+                                <Link href="/home" className="text-black hover:text-pink-500 transition-colors font-bold">
                                     Trang chủ
                                 </Link>
 
