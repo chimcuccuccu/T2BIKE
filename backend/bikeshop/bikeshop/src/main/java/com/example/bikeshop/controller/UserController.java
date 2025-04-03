@@ -34,6 +34,17 @@ public class UserController {
         }
     }
 
+    @PostMapping("/login")
+    public ResponseEntity<String> loginUser(@RequestBody UserDTO userDTO) {
+        Optional<User> user = userRepository.findByUsername(userDTO.getUsername());
+
+        if (user.isPresent() && user.get().getPassword().equals(userDTO.getPassword())) {
+            return ResponseEntity.ok("Đăng nhập thành công");
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Sai username hoặc mật khẩu");
+        }
+    }
+
     @GetMapping("/{username}")
     public ResponseEntity<User> getUser(@PathVariable String username) {
         Optional<User> user = userService.getUserByUsername(username);
