@@ -1,14 +1,26 @@
 "use client"
 
+import { useAuth } from '@/context/AuthContext';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 import Image from "next/image"
 import Link from "next/link"
-import { Facebook, Heart, Search, ShoppingCart, User } from "lucide-react"
+import { Facebook, Heart, Search, ShoppingCart, User, LogOut} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { UserMenu } from '../user-menu/user-menu';
 
 export const HeaderPage = () => {
+    const { user, setUser } = useAuth();
+
+    console.log("User in HeaderPage:", user);
+    
+    const handleLogout = async () => {
+        // Xử lý logout ở đây (xóa thông tin người dùng)
+        await axios.post('http://localhost:8081/api/users/logout');
+        setUser(null); // Xóa user trong state
+        localStorage.removeItem('user'); // Xóa thông tin người dùng khỏi localStorage
+    };
 return (
     <div>
         {/* Header */}
@@ -57,21 +69,21 @@ return (
                         <button className="p-2 hover:text-pink-500 transition-colors">
                             <ShoppingCart className="h-6 w-6" />
                         </button>
-                        <div className="flex items-center space-x-5">
-                        <Button
-                            variant="outline"
-                            size="lg"
-                            className="hidden md:inline-flex w-24 border-pink-300 text-pink-500 hover:bg-pink-50"
-                        >
-                            Đăng nhập
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="lg"
-                            className="hidden md:inline-flex w-24 border-pink-300 text-pink-500 hover:bg-pink-50"
-                        >
-                            Đăng ký
-                        </Button>
+
+                        <div className="flex items-center space-x-4">
+                            {user ? (
+                                <UserMenu username={user.username}>
+                                </UserMenu>
+                            ) : (
+                                <>
+                                <Link href="/signin">
+                                    <Button variant="outline" className="text-pink-500 border-pink-300">Đăng nhập</Button>
+                                </Link>
+                                <Link href="/signup">
+                                    <Button variant="outline" className="text-pink-500 border-pink-300">Đăng ký</Button>
+                                </Link>
+                                </>
+                            )}
                         </div>
                         </div>
                     </div>

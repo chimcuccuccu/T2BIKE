@@ -12,6 +12,7 @@ import ProductsContent from "@/components/dashboard/contents/ProductContent"
 import UsersContent from "@/components/dashboard/contents/UsersContent"
 import SettingsContent from "@/components/dashboard/contents/SettingsContent"
 import { MenuItem } from "@/types/menu-item"
+import { HeaderPage } from "@/components/Header/header-page"
 
 export default function Dashboard() {
   const [activeItem, setActiveItem] = useState<string>("dashboard")
