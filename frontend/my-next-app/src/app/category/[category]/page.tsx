@@ -16,6 +16,7 @@ import { SliderCustom } from "@/app/all-products/slider"
 import FormatPrice from "@/components/ui/FormatPrice"
 import NoProducts from "@/components/NoProducts";
 import { Filters } from "@/types/filters";
+import { HeaderPage } from "@/components/Header/header-page";
 
 export default function Categorypage() {
     const pathname = usePathname();
@@ -144,63 +145,7 @@ export default function Categorypage() {
     return (
         <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white">
         {/* Header */}
-        <motion.header
-            initial={{ opacity: 0, y: -50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease: "easeOut" }}
-            className="sticky top-0 z-50 bg-white shadow-sm"
-        >
-            <div className="container mx-auto px-24 py-4">
-                <div className="flex items-center justify-between">
-                    <Link href="/home" className="text-3xl font-extrabold text-pink-500">
-                    T2BIKE
-                    </Link>
-
-                    <nav className="hidden md:flex items-center space-x-9">
-                        <Link href="/home" className="text-black hover:text-pink-500 transition-colors font-bold">
-                            Trang chủ
-                        </Link>
-
-                        <Link href="/all-products" className="text-black hover:text-pink-500 transition-colors font-bold">
-                            Cửa hàng
-                        </Link>
-
-                        <Link href="/about" className="text-black hover:text-pink-500 transition-colors font-bold">
-                            Về chúng tôi
-                        </Link>
-
-                        <Link href="/faq" className="text-black hover:text-pink-500 transition-colors font-bold">
-                            FAQ
-                        </Link>
-
-                        <Link href="/contact" className="text-black hover:text-pink-500 transition-colors font-bold">
-                            Liên hệ
-                        </Link>
-                    </nav>
-
-                <div className="flex items-center space-x-4">
-                    <div className="relative hidden md:block w-64">
-                        <Input type="search" placeholder="Tìm kiếm..." className="pl-10 pr-4" />
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    </div>
-                    <button className="p-2 hover:text-pink-500 transition-colors">
-                        <Heart className="h-6 w-6" />
-                    </button>
-                    <button className="p-2 hover:text-pink-500 transition-colors">
-                        <ShoppingCart className="h-6 w-6" />
-                    </button>
-                    <div className="border-2 border-gray-400 p-1.5">
-                        <Link href="/signin" className="text-black hover:text-pink-500 transition-colors">
-                        Đăng nhập
-                        </Link>
-                    </div>
-                        <Link href="/signup" className="text-black hover:text-pink-500 transition-colors">
-                            Đăng ký
-                        </Link>
-                    </div>
-                </div>
-            </div>
-        </motion.header>
+        <HeaderPage></HeaderPage>
 
         {/* Breadcrumb */}
         <motion.div
@@ -328,7 +273,7 @@ export default function Categorypage() {
                                         <div className="relative group">
                                             <div className="aspect-square overflow-hidden">
                                                 <Image
-                                                src={product.imageUrl || "/placeholder.svg"}
+                                                src={product.imageUrls || "/placeholder.svg"}
                                                 alt={product.name}
                                                 width={300}
                                                 height={300}

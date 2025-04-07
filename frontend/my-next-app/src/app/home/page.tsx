@@ -9,10 +9,30 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { HeaderPage
 
+ } from '@/components/Header/header-page';
 export default function Home() {
     const [products, setProducts] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState('');
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        const checkLogin = async () => {
+            try {
+                const respone = await axios.get('http://localhost:8081/api/users/me', { withCredentials: true});
+                setUser(respone.data);
+            } catch (error) {
+                console.log("Chưa đăng nhập");
+            }
+        };
+        checkLogin();
+    }, []);
+
+    const handleLogout = () => {
+        setUser(null);
+        axios.post("http://localhost:8081/api/users/logout", {}, {withCredentials: true});
+    };
 
     const categories = [
         { id: "xe_tay_thang", name: "Xe tay thẳng", image: "/xe_tay_cong.png"},
@@ -40,72 +60,6 @@ export default function Home() {
     return (
         <div className="min-h-screen bg-white">
             {/* Header */}
-            <motion.h1
-                initial={{ opacity: 0, y: -50 }} // Bắt đầu mờ và cao hơn vị trí ban đầu
-                animate={{ opacity: 1, y: 0 }}   // Hiện dần và di chuyển xuống vị trí đúng
-                transition={{ duration: 1, ease: "easeOut" }} // Hiệu ứng mượt hơn
-            >
-                <header className="fixed top-0 left-0 w-full z-50 bg-white shadow-sm">
-                    <div className="container mx-auto px-24 py-4">
-                        <div className="flex items-center justify-between">
-                            <Link href="/home" className="text-3xl font-extrabold text-pink-500">
-                                T2BIKE
-                            </Link>
-
-                            <nav className="hidden md:flex items-center space-x-9">
-                                <Link href="/home" className="text-black hover:text-pink-500 transition-colors font-bold">
-                                    Trang chủ
-                                </Link>
-
-                                <Link href="/all-products" className="text-black hover:text-pink-500 transition-colors font-bold">
-                                    Cửa hàng
-                                </Link>
-
-                                <Link href="/about" className="text-black hover:text-pink-500 transition-colors font-bold">
-                                    Về chúng tôi
-                                </Link>
-                                
-                                <Link href="/faq" className="text-black hover:text-pink-500 transition-colors font-bold">
-                                    FAQ
-                                </Link>
-
-                                <Link href="/contact" className="text-black hover:text-pink-500 transition-colors font-bold">
-                                    Liên hệ
-                                </Link>
-                            </nav>
-
-                            <div className="flex items-center space-x-4">
-                            <div className="relative hidden md:block w-64">
-                                <Input type="search" placeholder="Tìm kiếm..." className="pl-10 pr-4" />
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                            </div>
-                            <button className="p-2 hover:text-pink-500 transition-colors">
-                                <Heart className="h-6 w-6" />
-                            </button>
-                            <button className="p-2 hover:text-pink-500 transition-colors">
-                                <ShoppingCart className="h-6 w-6" />
-                            </button>
-                            <div className="flex items-center space-x-5">
-                            <Button
-                                variant="outline"
-                                size="lg"
-                                className="hidden md:inline-flex w-24 border-pink-300 text-pink-500 hover:bg-pink-50"
-                            >
-                                Đăng nhập
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="lg"
-                                className="hidden md:inline-flex w-24 border-pink-300 text-pink-500 hover:bg-pink-50"
-                            >
-                                Đăng ký
-                            </Button>
-                            </div>
-                            </div>
-                        </div>
-                    </div>
-                </header>
-            </motion.h1>
 
             {/*Hero Section */}
             <section className="w-full max-w-screen-2xl mx-auto px-4 py-8 md:py-20 bg-gradient-to-b from-[#FFCDE2] to-[#FCFCF7]">

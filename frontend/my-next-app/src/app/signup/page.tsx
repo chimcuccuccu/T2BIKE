@@ -337,7 +337,7 @@ export default function SignUpForm() {
 
                 {/* Login Link */}
                 <div className="text-center">
-                    <Link href="/login" className="text-sm text-pink-500 hover:text-pink-600 transition-colors">
+                    <Link href="/signin" className="text-sm text-pink-500 hover:text-pink-600 transition-colors">
                         Bạn đã có tài khoản ư?
                     </Link>
                 </div>

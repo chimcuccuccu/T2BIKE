@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.List;
 import java.util.Map;
@@ -37,11 +39,17 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody UserDTO userDTO, HttpSession session) {
+    public ResponseEntity<?> login(@RequestBody UserDTO userDTO, HttpServletResponse response) {
         try {
             User user = userService.login(userDTO.getUsername(), userDTO.getPassword());
             if (user != null) {
-                session.setAttribute("user", user);
+                // Tạo cookie chứa thông tin đăng nhập (JWT hoặc một giá trị nhận dạng khác)
+                Cookie cookie = new Cookie("authToken", user.getUsername()); // Ví dụ với username
+                cookie.setHttpOnly(true); // Đảm bảo cookie chỉ có thể truy cập từ server (bảo mật)
+                cookie.setMaxAge(3600); // Đặt thời gian sống của cookie
+                cookie.setPath("/"); // Đặt path của cookie để nó có thể truy cập ở tất cả các trang
+                response.addCookie(cookie);
+
                 return ResponseEntity.ok(user);
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Sai tài khoản hoặc mật khẩu"));
@@ -52,8 +60,13 @@ public class UserController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpSession session) {
-        session.invalidate();  // Xoá session khi người dùng đăng xuất
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        // Xóa cookie
+        Cookie cookie = new Cookie("authToken", null); // Thiết lập giá trị cookie là null để xóa
+        cookie.setMaxAge(0); // Đặt thời gian sống của cookie về 0 để xóa
+        cookie.setPath("/"); // Đảm bảo cookie có thể xóa trên toàn bộ ứng dụng
+        response.addCookie(cookie);
+
         return ResponseEntity.ok("Đăng xuất thành công");
     }
 

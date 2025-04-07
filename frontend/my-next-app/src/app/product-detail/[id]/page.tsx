@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils"
 import ImageLightbox from "@/components/ImageLightBox"
 import ProductSpecs from "@/components/ProductSpecs"
 import QuestionsAnswers from "@/components/QuestionAnswer"
+import { HeaderPage } from "@/components/Header/header-page"
 
 export default function ProductDetail() {
     const { id } = useParams()
@@ -114,83 +115,6 @@ export default function ProductDetail() {
     return (
         <div className="min-h-screen bg-pink-50">
            {/* Header */}
-           <motion.header
-                initial={{ opacity: 0, y: -50 }} // Bắt đầu mờ và cao hơn vị trí ban đầu
-                animate={{ opacity: 1, y: 0 }}   // Hiện dần và di chuyển xuống vị trí đúng
-                transition={{ duration: 1, ease: "easeOut" }} // Hiệu ứng mượt hơn
-            >
-                <header className="top-0 left-0 w-full z-50 bg-white shadow-sm">
-                    <div className="container mx-auto px-24 py-4">
-                        <div className="flex items-center justify-between">
-                            <Link href="/home" className="text-3xl font-extrabold text-pink-500">
-                                T2BIKE
-                            </Link>
-
-                            <nav className="hidden md:flex items-center space-x-9">
-                                <Link href="/home" className="text-black hover:text-pink-500 transition-colors font-bold">
-                                    Trang chủ
-                                </Link>
-
-                                <Link href="/all-products" className="text-black hover:text-pink-500 transition-colors font-bold">
-                                    Cửa hàng
-                                </Link>
-
-                                <Link href="/about" className="text-black hover:text-pink-500 transition-colors font-bold">
-                                    Về chúng tôi
-                                </Link>
-                                
-                                <Link href="/faq" className="text-black hover:text-pink-500 transition-colors font-bold">
-                                    FAQ
-                                </Link>
-
-                                <Link href="/contact" className="text-black hover:text-pink-500 transition-colors font-bold">
-                                    Liên hệ
-                                </Link>
-                            </nav>
-
-                            <div className="flex items-center space-x-4">
-                            <div className="relative hidden md:block w-64">
-                                <Input type="search" placeholder="Tìm kiếm..." className="pl-10 pr-4" />
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                            </div>
-                            <button className="p-2 hover:text-pink-500 transition-colors">
-                                <Heart className="h-6 w-6" />
-                            </button>
-                            <button className="p-2 hover:text-pink-500 transition-colors">
-                                <ShoppingCart className="h-6 w-6" />
-                            </button>
-                            <div className='border-2 border-gray-400 p-1.5'>
-                                <Link href="/signin" className="text-black hover:text-pink-500 transition-colors">
-                                Đăng nhập
-                                </Link>
-                            </div>
-                            <Link href="/signup" className="text-black hover:text-pink-500 transition-colors">
-                                Đăng ký
-                            </Link>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Breadcrumb */}
-                    {/* Header with breadcrumb */}
-                    <div className="bg-pink-100 shadow-sm">
-                        <div className="container mx-auto px-4 py-3">
-                            <div className="flex items-center text-sm text-gray-500">
-                                <Link href="/" className="flex items-center hover:text-pink-500">
-                                <Home className="h-4 w-4 mr-1" />
-                                <span>Trang chủ</span>
-                                </Link>
-                                <ChevronRight className="h-4 w-4 mx-2" />
-                                <Link href="/category" className="hover:text-pink-500">
-                                    {product.category}
-                                </Link>
-                                <ChevronRight className="h-4 w-4 mx-2" />
-                                <span className="text-gray-700 font-medium">{product.name}</span>
-                            </div>
-                        </div>
-                    </div>
-                </header>
-            </motion.header>
         
             <div className="container mx-auto px-4 mt-10 max-w-5xl">
                 <AnimatePresence>
