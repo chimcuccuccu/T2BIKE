@@ -39,15 +39,16 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody UserDTO userDTO, HttpServletResponse response) {
+    public ResponseEntity<?> login(@RequestBody UserDTO userDTO, HttpServletResponse response, HttpSession session) {
         try {
             User user = userService.login(userDTO.getUsername(), userDTO.getPassword());
             if (user != null) {
-                // Tạo cookie chứa thông tin đăng nhập (JWT hoặc một giá trị nhận dạng khác)
-                Cookie cookie = new Cookie("authToken", user.getUsername()); // Ví dụ với username
-                cookie.setHttpOnly(true); // Đảm bảo cookie chỉ có thể truy cập từ server (bảo mật)
-                cookie.setMaxAge(3600); // Đặt thời gian sống của cookie
-                cookie.setPath("/"); // Đặt path của cookie để nó có thể truy cập ở tất cả các trang
+                session.setAttribute("user", user);
+
+                Cookie cookie = new Cookie("authToken", user.getUsername());
+                cookie.setHttpOnly(true);
+                cookie.setMaxAge(3600);
+                cookie.setPath("/");
                 response.addCookie(cookie);
 
                 return ResponseEntity.ok(user);
@@ -60,11 +61,12 @@ public class UserController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletResponse response) {
+    public ResponseEntity<?> logout(HttpServletResponse response, HttpSession session) {
+        session.invalidate();
         // Xóa cookie
-        Cookie cookie = new Cookie("authToken", null); // Thiết lập giá trị cookie là null để xóa
-        cookie.setMaxAge(0); // Đặt thời gian sống của cookie về 0 để xóa
-        cookie.setPath("/"); // Đảm bảo cookie có thể xóa trên toàn bộ ứng dụng
+        Cookie cookie = new Cookie("authToken", null);
+        cookie.setMaxAge(0);
+        cookie.setPath("/");
         response.addCookie(cookie);
 
         return ResponseEntity.ok("Đăng xuất thành công");
@@ -91,6 +93,6 @@ public class UserController {
         }
 
         User user = (User) userObj;
-        return ResponseEntity.ok(user); // Trả về thông tin người dùng
+        return ResponseEntity.ok(user);
     }
 }

@@ -49,10 +49,10 @@ export default function LoginPage() {
             if (response.status === 200) {
               console.log("Login successful:", response.data);  
                 const data = response.data;
-                setUser({ username: data.username });
+                setUser(data);
                 console.log("User logged in:", data.username); // Lưu thông tin người dùng vào context
                 // Redirect hoặc cập nhật trạng thái UI sau khi đăng nhập thành công
-              
+                console.log(data);
               if (response.data.token) {
                   localStorage.setItem("token", response.data.token)
               }

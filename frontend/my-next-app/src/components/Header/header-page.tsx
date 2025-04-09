@@ -72,7 +72,7 @@ return (
 
                         <div className="flex items-center space-x-4">
                             {user ? (
-                                <UserMenu username={user.username}>
+                                <UserMenu username={user.username} fullName={user.fullName}>
                                 </UserMenu>
                             ) : (
                                 <>
