@@ -138,7 +138,7 @@ export default function SignUpForm() {
     const years = Array.from({ length: 100 }, (_, i) => currentYear - i)
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-[#FFCDE2] to-[#FCFCF7] flex items-center justify-center p-4">
+        <div className="min-h-screen bg-gradient-to-b from-[#FFCDE2] to-[#FCFCF7] flex items-center justify-center p-4 pt-20">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
