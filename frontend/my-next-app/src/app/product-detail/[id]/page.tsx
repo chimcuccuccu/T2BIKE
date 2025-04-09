@@ -116,7 +116,7 @@ export default function ProductDetail() {
         <div className="min-h-screen bg-pink-50">
            {/* Header */}
         
-            <div className="container mx-auto px-4 mt-10 max-w-5xl">
+            <div className="container mx-auto px-4 mt-10 max-w-5xl pt-16">
                 <AnimatePresence>
                     {isScrolled && (
                     <motion.div
