@@ -1,7 +1,9 @@
 package com.example.bikeshop.service;
 
 import com.example.bikeshop.dto.UserDTO;
+import com.example.bikeshop.entity.Product;
 import com.example.bikeshop.entity.User;
+import com.example.bikeshop.repository.ProductRepository;
 import com.example.bikeshop.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,6 +16,8 @@ import java.util.regex.Pattern;
 public class UserService {
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private ProductRepository productRepository;
 
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -26,7 +30,7 @@ public class UserService {
 
         User user = new User();
         user.setUsername(userDTO.getUsername());
-        user.setPassword(userDTO.getPassword()); // Nên mã hóa mật khẩu trước khi lưu
+        user.setPassword(userDTO.getPassword());
         user.setFullName(userDTO.getFullName());
         user.setGender(userDTO.getGender());
         user.setBirthDate(userDTO.getBirthDate());
@@ -51,4 +55,5 @@ public class UserService {
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
+
 }
