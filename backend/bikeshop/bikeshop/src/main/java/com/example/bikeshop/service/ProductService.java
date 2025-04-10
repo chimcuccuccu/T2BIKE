@@ -52,4 +52,8 @@ public class ProductService {
 
         return productRepository.findAll(spec);
     }
+
+    public List<Product> searchProducts (String keyword) {
+        return productRepository.searchAllFields(keyword);
+    }
 }

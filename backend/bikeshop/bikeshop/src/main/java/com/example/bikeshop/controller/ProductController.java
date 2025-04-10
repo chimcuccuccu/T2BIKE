@@ -68,4 +68,10 @@ public class ProductController {
         List<Product> products = productService.filterProducts(category, brand, minPrice, maxPrice);
         return ResponseEntity.ok(products);
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<Product>> searchProducts (@RequestParam("keyword") String keyword) {
+        List<Product> results = productService.searchProducts(keyword);
+        return ResponseEntity.ok(results);
+    }
 }
