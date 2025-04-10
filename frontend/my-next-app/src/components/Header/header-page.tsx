@@ -9,6 +9,7 @@ import { Facebook, Heart, Search, ShoppingCart, User, LogOut} from "lucide-react
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { UserMenu } from '../user-menu/user-menu';
+import SearchComponent from '../Search/SearchComponent';
 
 export const HeaderPage = () => {
     const { user, setUser } = useAuth();
@@ -59,10 +60,7 @@ return (
                         </nav>
 
                         <div className="flex items-center space-x-4">
-                        <div className="relative hidden md:block w-64">
-                            <Input type="search" placeholder="Tìm kiếm..." className="pl-10 pr-4" />
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        </div>
+                        <SearchComponent></SearchComponent>
                         <button className="p-2 hover:text-pink-500 transition-colors">
                             <Heart className="h-6 w-6" />
                         </button>
