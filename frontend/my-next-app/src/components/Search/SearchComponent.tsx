@@ -84,7 +84,7 @@ export default function SearchComponent() {
                 <input
                     ref={inputRef}
                     type="text"
-                    className="w-full py-2.5 pl-10 pr-10 bg-white border border-gray-200 rounded-lg focus:outline-none"
+                    className="w-full py-2.5 pl-10 pr-10 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition"
                     placeholder="Tìm kiếm sản phẩm..."
                     value={searchTerm}
                     onChange={handleChange}
@@ -132,7 +132,25 @@ export default function SearchComponent() {
                             ))
                         ) : (
                             <div className="py-10 text-center text-gray-500">
-                            {searchTerm ? "Không tìm thấy sản phẩm nào" : "Nhập từ khóa để tìm kiếm"}
+                            {searchTerm ? (
+                                <>
+                                <img
+                                    src="/bird-cute.gif"
+                                    alt="Không tìm thấy"
+                                    className="w-40 h-40 mb-9 ml-28"
+                                />
+                                <p>Không tìm thấy sản phẩm nào</p>
+                                </>
+                            ) : (
+                                <>
+                                <img
+                                    src="/confused-cute-puppy.gif"
+                                    alt="Gợi ý tìm kiếm"
+                                    className="w-40 h-40 mb-9 ml-28"
+                                />
+                                <p>Bạn muốn tìm gì dọ?</p>
+                                </>
+                            )}
                             </div>
                         )}
                         </div>

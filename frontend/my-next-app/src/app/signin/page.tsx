@@ -15,6 +15,7 @@ export default function LoginPage() {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState("")
     const router = useRouter()
+    const [showPassword, setShowPassword] = useState(false);
   
     useEffect(() => {
       const storedUser = localStorage.getItem("user")
@@ -166,15 +167,26 @@ export default function LoginPage() {
                       disabled={isLoading}
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-2 relative">
                     <Input
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       placeholder="Mật khẩu"
                       className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-pink-500 focus:ring-pink-500 transition-all duration-200"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       disabled={isLoading}
                     />
+                    <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-3 transform -translate-y-1/2"
+                    >
+                        <img
+                            src={showPassword ? "/pass-open.png" : "/password-hide.svg"}
+                            alt="Toggle Password"
+                            className="w-6 h-6"
+                        />
+                    </button>
                   </div>
 
                   <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
