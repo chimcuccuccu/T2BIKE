@@ -58,7 +58,7 @@ export default function Home() {
     }, [selectedCategory]);
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-gradient-to-b from-white to-pink-50">
             {/* Header */}
 
             {/*Hero Section */}
