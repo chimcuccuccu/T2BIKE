@@ -273,7 +273,7 @@ export default function Categorypage() {
                                         <div className="relative group">
                                             <div className="aspect-square overflow-hidden">
                                                 <Image
-                                                src={product.imageUrls || "/placeholder.svg"}
+                                                src={product.imageUrls[0] || "/placeholder.svg"}
                                                 alt={product.name}
                                                 width={300}
                                                 height={300}

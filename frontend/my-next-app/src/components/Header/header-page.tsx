@@ -10,7 +10,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { UserMenu } from '../user-menu/user-menu';
 import SearchComponent from '../Search/SearchComponent';
-
+import { AnimatePresence } from 'framer-motion';
+import { useCart } from '@/context/CartContext';
+import { useState } from 'react';
+import { CartDropdown } from '../Cart-DropDown/cart-dropdown';
 export const HeaderPage = () => {
     const { user, setUser } = useAuth();
 
@@ -22,6 +25,9 @@ export const HeaderPage = () => {
         setUser(null); // Xóa user trong state
         localStorage.removeItem('user'); // Xóa thông tin người dùng khỏi localStorage
     };
+
+    const { cart } = useCart();
+    const [showCart, setShowCart] = useState(false)
 return (
     <div>
         {/* Header */}
@@ -38,24 +44,28 @@ return (
                         </Link>
 
                         <nav className="hidden md:flex items-center space-x-9">
-                            <Link href="/home" className="text-black hover:text-pink-500 transition-colors font-bold">
+                            <Link href="/home" className="font-bold transition-colors hover:text-pink-500 relative group">
                                 Trang chủ
+                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all group-hover:w-full"></span>
                             </Link>
-
-                            <Link href="/all-products" className="text-black hover:text-pink-500 transition-colors font-bold">
-                                Cửa hàng
+                                <Link href="/all-products" className="font-bold transition-colors hover:text-pink-500 relative group">
+                                    Cửa hàng
+                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all group-hover:w-full"></span>
                             </Link>
-
-                            <Link href="/about" className="text-black hover:text-pink-500 transition-colors font-bold">
+                            <Link
+                                href="/about"
+                                className="font-bold transition-colors hover:text-pink-500 relative group"
+                            >
                                 Về chúng tôi
+                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all group-hover:w-full"></span>
                             </Link>
-                            
-                            <Link href="/faq" className="text-black hover:text-pink-500 transition-colors font-bold">
+                            <Link href="/faq" className="font-bold transition-colors hover:text-pink-500 relative group">
                                 FAQ
+                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all group-hover:w-full"></span>
                             </Link>
-
-                            <Link href="/contact" className="text-black hover:text-pink-500 transition-colors font-bold">
+                                <Link href="/contact" className="font-bold transition-colors hover:text-pink-500 relative group">
                                 Liên hệ
+                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all group-hover:w-full"></span>
                             </Link>
                         </nav>
 
@@ -64,9 +74,8 @@ return (
                         <button className="p-2 hover:text-pink-500 transition-colors">
                             <Heart className="h-6 w-6" />
                         </button>
-                        <button className="p-2 hover:text-pink-500 transition-colors">
-                            <ShoppingCart className="h-6 w-6" />
-                        </button>
+
+                        <CartDropdown></CartDropdown>
 
                         <div className="flex items-center space-x-4">
                             {user ? (
@@ -74,12 +83,21 @@ return (
                                 </UserMenu>
                             ) : (
                                 <>
-                                <Link href="/signin">
-                                    <Button variant="outline" className="text-pink-500 border-pink-300">Đăng nhập</Button>
-                                </Link>
-                                <Link href="/signup">
-                                    <Button variant="outline" className="text-pink-500 border-pink-300">Đăng ký</Button>
-                                </Link>
+                                <div className="hidden md:flex gap-2">
+                                    <Link href="/signin">
+                                    <Button
+                                        variant="outline"
+                                        className="text-pink-500 border-pink-500 hover:bg-pink-50 transition-transform hover:scale-105"
+                                    >
+                                        Đăng nhập
+                                    </Button>
+                                    </Link>
+                                    <Link href="/signup">
+                                    <Button className="bg-pink-500 hover:bg-pink-600 text-white transition-transform hover:scale-105">
+                                        Đăng ký
+                                    </Button>
+                                    </Link>
+                                </div>
                                 </>
                             )}
                         </div>
