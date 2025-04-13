@@ -15,6 +15,9 @@ import FormatPrice from "@/components/ui/FormatPrice";
 import { useSearchParams } from "next/navigation";
 import { Filters } from "@/types/filters";
 import { HeaderPage } from "@/components/Header/header-page";
+import { useCart } from "@/context/CartContext";
+import { useToast } from "@/hooks/use-toast";
+import { ProductList } from "@/components/Product-List/product-list";
 
 export default function ProductsPage() {
     const [products, setProducts] = useState<Product[]>([])
@@ -120,6 +123,43 @@ export default function ProductsPage() {
     // Calculate total pages
     const totalPages = Math.ceil(products.length / productsPerPage)
 
+    const { addToCart } = useCart()
+    // const { wishlist, addToWishlist, removeFromWishlist } = useWishlist()
+    const { toast } = useToast()
+    const [addedProducts, setAddedProducts] = useState<number[]>([])
+
+    const handleAddToCart = (product: any) => {
+        addToCart(product)
+
+        // Hiệu ứng thêm vào giỏ hàng
+        setAddedProducts((prev) => [...prev, product.id])
+        setTimeout(() => {
+        setAddedProducts((prev) => prev.filter((id) => id !== product.id))
+        }, 1000)
+
+        toast({
+        title: "Đã thêm vào giỏ hàng",
+        description: `${product.name} đã được thêm vào giỏ hàng của bạn.`,
+        })
+    }
+
+    // const handleToggleWishlist = (product: any) => {
+    //     const isInWishlist = wishlist.some((item) => item.id === product.id)
+
+    //     if (isInWishlist) {
+    //     removeFromWishlist(product.id)
+    //     toast({
+    //         title: "Đã xóa khỏi danh sách yêu thích",
+    //         description: `${product.name} đã được xóa khỏi danh sách yêu thích của bạn.`,
+    //     })
+    //     } else {
+    //     addToWishlist(product)
+    //     toast({
+    //         title: "Đã thêm vào danh sách yêu thích",
+    //         description: `${product.name} đã được thêm vào danh sách yêu thích của bạn.`,
+    //     })
+    //     }
+    // }
     return (
         <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white">
             {/* Header */}
@@ -219,10 +259,6 @@ export default function ProductsPage() {
                     className="flex-1"
                     >
                         <div className="flex-1">
-                            <h2 className="text-2xl font-bold mb-4">
-                                {isFiltered ? "Kết quả lọc" : "Tất cả sản phẩm"}
-                            </h2>
-
                             {products.length === 0 ? (
                                  <div className="flex flex-col items-center justify-center">
                                  <Image
@@ -237,73 +273,22 @@ export default function ProductsPage() {
                                  </h2>
                              </div>
                             ) : (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {currentProducts.map((product, index) => (
-                                    <motion.div
-                                        key={index}
-                                        className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300"
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                    >
-                                        <Link href={`/product-detail/${product.id}`}>
-                                            <div className="relative group">
-                                                <div className="aspect-square overflow-hidden">
-                                                    <Image
-                                                    src={product.imageUrls[0] || "/placeholder.svg"}
-                                                    alt={product.name}
-                                                    width={300}
-                                                    height={300}
-                                                    className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-                                                    />
-                                                </div>
-                                                <div className="absolute top-4 right-4 space-y-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button className="p-2 bg-white rounded-full shadow-md hover:bg-pink-50">
-                                                    <Heart className="h-5 w-5 text-pink-500" />
-                                                    </button>
-                                                    <button className="p-2 bg-white rounded-full shadow-md hover:bg-pink-50">
-                                                    <ShoppingCart className="h-5 w-5 text-pink-500" />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <div className="p-4">
-                                                <h3 className="font-medium">{product.name}</h3>
-                                                <p className="text-pink-500 font-semibold mt-2"><FormatPrice price={product.price}/></p>
-                                            </div> 
-                                        </Link>
-                                    </motion.div>
-                                ))} 
-                            </div> 
+                                <motion.div
+                                    key={JSON.stringify(products)}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.5 }}
+                                    className="flex-1"
+                                >
+                                    <ProductList
+                                    products={currentProducts}
+                                    currentPage={currentPage}
+                                    totalPages={totalPages}
+                                    isFiltered={isFiltered}
+                                    onPageChange={setCurrentPage}
+                                    />
+                                </motion.div>
                             )}
-                        </div>
-                        
-
-                        {/* Pagination */}
-                        <div className="flex justify-center mt-8">
-                            <button
-                            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                            className="px-4 py-2 mx-1 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors"
-                            disabled={currentPage === 1}
-                            >
-                            Trước
-                            </button>
-                            {Array.from({ length: totalPages }, (_, i) => (
-                            <button
-                                key={i + 1}
-                                onClick={() => setCurrentPage(i + 1)}
-                                className={`px-4 py-2 mx-1 rounded-lg transition-colors ${
-                                currentPage === i + 1 ? "bg-pink-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                                }`}
-                            >
-                                {i + 1}
-                            </button>
-                            ))}
-                            <button
-                            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                            className="px-4 py-2 mx-1 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors"
-                            disabled={currentPage === totalPages}
-                            >
-                            Sau
-                            </button>
                         </div>
                     </motion.div>
                 </div>
