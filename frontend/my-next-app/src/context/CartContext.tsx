@@ -59,12 +59,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   
     setCart((prevCart) => {
-      const isInCart = prevCart.some((item) => item.id === product.id)
+      const isInCart = prevCart.some((item) => item.productId === product.id)
+      console.log("Toggling cart item:", { product, isInCart })
   
       let updatedCart: CartItem[]
       if (isInCart) {
         // Xóa khỏi giỏ hàng
-        updatedCart = prevCart.filter((item) => item.id !== product.id)
+        updatedCart = prevCart.filter((item) => item.productId !== product.id)
       } else {
         // Thêm vào giỏ hàng
         const newCartItem: CartItem = {
@@ -77,29 +78,34 @@ export function CartProvider({ children }: { children: ReactNode }) {
         updatedCart = [...prevCart, newCartItem]
       }
   
-      // ✅ Gọi hàm lưu vào DB
+      console.log("Updated cart:", updatedCart)
       saveCartToDB(Number(user.id), updatedCart)
   
       return updatedCart
     })
   }
 
-  const removeFromCart = (cartItemId: number) => {
+  const removeFromCart = (productId: number) => {
     if (!user) {
-      console.warn("Bạn chưa đăng nhập nên không thể thao tác giỏ hàng")
-      return
+      console.warn("Bạn chưa đăng nhập nên không thể thao tác giỏ hàng");
+      return;
     }
-
+  
     setCart((prevCart) => {
-      const updatedCart = prevCart.filter((item) => item.id !== cartItemId)
+      // Lọc giỏ hàng để loại bỏ sản phẩm theo productId
+      const updatedCart = prevCart.filter((item) => item.productId !== productId);
+  
       if (!user) {
-        localStorage.setItem("cart", JSON.stringify(updatedCart))
+        // Nếu chưa đăng nhập, lưu vào localStorage
+        localStorage.setItem("cart", JSON.stringify(updatedCart));
       } else {
-        saveCartToDB(Number(user.id), updatedCart)
+        // Nếu đã đăng nhập, gọi hàm lưu giỏ hàng vào DB
+        saveCartToDB(Number(user.id), updatedCart);
       }
-      return updatedCart
-    })
-  }
+  
+      return updatedCart;
+    });
+  };
 
   const updateQuantity = (cartItemId: number, quantity: number) => {
     if (!user) {
@@ -124,7 +130,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }
 
   const isInCart = (productId: number) => {
-    return cart.some((item) => item.productId === productId)
+    console.log("Checking if product is in cart:", { productId, cart });
+    return cart.some((item) => item.productId === productId);
   }
 
   const saveCartToDB = async (userId: number, cart: CartItem[]) => {
