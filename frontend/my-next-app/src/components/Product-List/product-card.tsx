@@ -9,21 +9,47 @@ import { useCart } from "@/context/CartContext"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { Product } from "@/types/product"
+import { useUser } from "@/hooks/useUser"
+import { useRouter } from "next/navigation"
+
 interface ProductCardProps {
   product: Product
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  const user = useUser()
   const {addToCart, removeFromCart, isInCart } = useCart()
   const { toast } = useToast()
   const [isHovered, setIsHovered] = useState(false)
+  const router = useRouter();
 
   const handleAddToCart = () => {
+    if (!user) {
+      // Hiển thị thông báo yêu cầu đăng nhập
+      toast({
+        variant: "pink",
+        title: "Vui lòng đăng nhập!",
+        description: (
+          <>
+            Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng.
+            <Button
+              size="sm"
+              variant="link"
+              onClick={() => router.push("/signin")} // Chuyển hướng đến trang đăng nhập
+              className="text-white font-semibold text-sm bg-pink-600 hover:bg-pink-700 border border-transparent rounded-md px-4 py-2 mt-2 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2"
+            >
+              Đăng nhập
+            </Button>
+          </>
+        ),
+      })
+      return
+    }
+
     if (inCart) {
-      // In ra thông tin giỏ hàng và kiểm tra trạng thái của `inCart`
       console.log("Removing from cart", product.id);
       
-      removeFromCart(product.id); // Gọi hàm xóa khỏi giỏ hàng
+      removeFromCart(product.id); 
   
       toast({
         variant: "pink",
@@ -33,7 +59,7 @@ export function ProductCard({ product }: ProductCardProps) {
     } else {
       console.log("Adding to cart", product.id);
   
-      addToCart(product); // Gọi hàm thêm vào giỏ hàng
+      addToCart(product); 
   
       toast({
         variant: "pink",
