@@ -11,6 +11,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { ProductCard } from "./product-card";
+import { useAuth } from "@/hooks/useAuth";
+import router from "next/dist/client/router";
+import { useUser } from "@/hooks/useUser";
 
 interface ProductListProps {
   products: Product[];
@@ -31,19 +34,30 @@ export function ProductList({
   const { toast } = useToast();
   const [addedProducts, setAddedProducts] = useState<number[]>([]);
 
-  const handleAddToCart = (product: Product) => {
-    addToCart(product);
-    setAddedProducts((prev) => [...prev, product.id]);
-    setTimeout(() => {
-      setAddedProducts((prev) => prev.filter((id) => id !== product.id));
-    }, 1000);
+  const { isLoggedIn, userId, fullName } = useAuth();
 
+  const handleAddToCart = (product: Product) => {
+    const user = useUser();  // Lấy thông tin người dùng từ useUser
+  
+    if (!user) {
+      toast({
+        title: "Bạn chưa đăng nhập",
+        description: "Vui lòng đăng nhập để thêm vào giỏ hàng.",
+        variant: "destructive",
+        
+      });
+      router.push("/login");
+      return;
+      console.log("hihi")
+    }
+  
+    addToCart(product);  // Thêm vào giỏ hàng mà không cần truyền userId
     toast({
       title: "Đã thêm vào giỏ hàng",
-      description: `${product.name} đã được thêm vào giỏ hàng của bạn.`,
+      description: `${product.name} đã được thêm vào giỏ hàng.`,
     });
   };
-
+  
   return (
     <div className="flex-1">
       <h2 className="text-2xl font-bold mb-4">

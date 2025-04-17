@@ -14,27 +14,35 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const { addToCart, removeFromCart, isInCart } = useCart()
+  const {addToCart, removeFromCart, isInCart } = useCart()
   const { toast } = useToast()
   const [isHovered, setIsHovered] = useState(false)
 
   const handleAddToCart = () => {
     if (inCart) {
-      removeFromCart(product.id)
+      // In ra thông tin giỏ hàng và kiểm tra trạng thái của `inCart`
+      console.log("Removing from cart", product.id);
+      
+      removeFromCart(product.id); // Gọi hàm xóa khỏi giỏ hàng
+  
       toast({
         variant: "pink",
         title: "Đã xóa khỏi giỏ hàng!",
         description: `${product.name} đã được xóa khỏi giỏ hàng của bạn.`,
-      })
+      });
     } else {
-      addToCart(product)
+      console.log("Adding to cart", product.id);
+  
+      addToCart(product); // Gọi hàm thêm vào giỏ hàng
+  
       toast({
         variant: "pink",
         title: "Đã thêm vào giỏ hàng!",
         description: `${product.name} đã được thêm vào giỏ hàng của bạn.`,
-      })
+      });
     }
-  }
+  };
+  
 
   // const handleAddToWishlist = () => {
   //   if (inWishlist) {

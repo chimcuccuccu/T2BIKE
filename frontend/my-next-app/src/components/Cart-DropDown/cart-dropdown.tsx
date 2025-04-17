@@ -101,11 +101,12 @@ import { ScrollArea } from "@radix-ui/react-scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 import { formatCurrency } from "@/lib/utils"
+import { useAuth } from "@/hooks/useAuth"
 
 export function CartDropdown() {
   const [isOpen, setIsOpen] = useState(false)
-  const { cart, removeFromCart, updateQuantity } = useCart()
-
+  const { cart, removeFromCart, updateQuantity} = useCart()
+   const { isLoggedIn, userId, fullName } = useAuth();
   const toggleDropdown = () => setIsOpen(!isOpen)
 
   const handleQuantityChange = (id: number, newQuantity: number) => {
@@ -223,7 +224,7 @@ export function CartDropdown() {
                                 variant="ghost"
                                 size="icon"
                                 className="h-7 w-7 text-gray-400 hover:text-pink-500 hover:bg-pink-50"
-                                onClick={() => removeFromCart(item.id)}
+                                onClick={() => removeFromCart(item.productId)}
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
