@@ -9,6 +9,9 @@ import { useCart } from "@/context/CartContext"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { Product } from "@/types/product"
+import { useUser } from "@/hooks/useUser"
+import { useRouter } from "next/navigation"
+
 interface ProductCardProps {
   product: Product
 }
@@ -17,8 +20,30 @@ export function ProductCard({ product }: ProductCardProps) {
   const { addToCart, removeFromCart, isInCart } = useCart()
   const { toast } = useToast()
   const [isHovered, setIsHovered] = useState(false)
+  const user = useUser()
+  const router = useRouter()
 
   const handleAddToCart = () => {
+    if (!user) {
+      toast({
+        title: "Bạn chưa đăng nhập",
+        description: (
+          <div>
+            <p>Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.</p>
+            <Button
+              variant="outline"
+              className="mt-2 text-pink-600 border-pink-500 hover:bg-pink-50"
+              onClick={() => router.push("/login")}
+            >
+              Đăng nhập ngay
+            </Button>
+          </div>
+        ),
+        variant: "destructive",
+      })
+      return
+    }
+  
     if (inCart) {
       removeFromCart(product.id)
       toast({
