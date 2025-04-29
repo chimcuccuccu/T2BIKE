@@ -29,7 +29,7 @@ public class CartService {
                     return newItem;
                 });
 
-        item.setQuantity(item.getQuantity() + quantity);
+        item.setQuantity(quantity);
         cartItemRepo.save(item);
     }
 
@@ -39,6 +39,8 @@ public class CartService {
 
         List<CartItemResponseDTO> itemDTOs = items.stream()
                 .map(i -> new CartItemResponseDTO(
+                        i.getId(),
+                        i.getProduct().getId(),
                         i.getProduct().getName(),
                         i.getQuantity(),
                         i.getProduct().getPrice()
@@ -60,5 +62,21 @@ public class CartService {
 
     public void clearCart(Long userId) {
         cartItemRepo.deleteByUserId(userId);
+    }
+
+    public void syncCart(Long userId, List<CartItem> newItems) {
+        // Xóa giỏ hàng cũ
+        cartItemRepo.deleteByUserId(userId);
+
+        // Thêm mới từng mục từ danh sách truyền vào
+        User user = userRepo.findById(userId).orElseThrow();
+        for (CartItem item : newItems) {
+            Product product = productRepo.findById(item.getProduct().getId()).orElseThrow();
+            CartItem newItem = new CartItem();
+            newItem.setUser(user);
+            newItem.setProduct(product);
+            newItem.setQuantity(item.getQuantity());
+            cartItemRepo.save(newItem);
+        }
     }
 }

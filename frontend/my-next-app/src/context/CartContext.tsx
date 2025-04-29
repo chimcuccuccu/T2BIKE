@@ -18,115 +18,181 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([])
-  const user = useUser()
+  const { user, isLoading } = useUser()
 
   // Lấy giỏ hàng từ localStorage hoặc API nếu người dùng đã đăng nhập
   useEffect(() => {
+    if (isLoading) return;
+
     if (user) {
-      fetchCartFromDB(Number(user.id))
+      fetchCartFromDB(Number(user.id));
     } else {
-      const savedCart = localStorage.getItem("cart")
+      const savedCart = localStorage.getItem("cart");
       if (savedCart) {
         try {
-          setCart(JSON.parse(savedCart))
+          setCart(JSON.parse(savedCart));
         } catch (error) {
-          console.error("Failed to parse cart from localStorage:", error)
+          console.error("Failed to parse cart from localStorage:", error);
         }
       }
     }
-  }, [user]) // Khi `user` thay đổi, giỏ hàng sẽ được tải lại
+  }, [user, isLoading]);
 
   useEffect(() => {
-    if (!user) {
-      localStorage.setItem("cart", JSON.stringify(cart))
+    if (user) {
+      saveCartToDB(Number(user.id), cart)
+    } else {
+      // Lưu giỏ hàng vào localStorage nếu chưa đăng nhập
+      localStorage.setItem("cart", JSON.stringify(cart));
     }
-  }, [cart, user]) // Đồng bộ giỏ hàng vào localStorage khi có thay đổi
+  }, [cart, user])
 
   const fetchCartFromDB = async (userId: number) => {
     try {
-      const res = await fetch(`/api/cart/${userId}`)
-      const data: CartItem[] = await res.json()
-      setCart(data)
+      const res = await fetch(`http://localhost:8081/api/cart/${userId}`)
+      if (!res.ok) throw new Error('Failed to fetch cart')
+      const data = await res.json()
+      // Convert response to CartItem format
+      const cartItems: CartItem[] = data.items.map((item: any) => ({
+        id: item.id,
+        userId: userId,
+        productId: item.productId,
+        product: {
+          name: item.productName,
+          price: item.price,
+          description: '',
+          imageUrls: [],
+          category: '',
+          brand: '',
+          color: [],
+          quantity: 0
+        },
+        quantity: item.quantity
+      }));
+
+      setCart(cartItems);
+
     } catch (error) {
       console.error("Failed to fetch cart from DB:", error)
     }
   }
 
-  const toggleCartItem = (product: Product) => {
-    if (!user) {
-      console.warn("Bạn chưa đăng nhập nên không thể thao tác giỏ hàng")
-      return
+  const toggleCartItem = async (product: Product) => {
+    if (!user || isLoading) {
+      console.warn("Bạn chưa đăng nhập hoặc chưa sẵn sàng thao tác giỏ hàng");
+      return;
     }
   
-    setCart((prevCart) => {
-      const isInCart = prevCart.some((item) => item.productId === product.id)
-      console.log("Toggling cart item:", { product, isInCart })
+    const isInCartNow = cart.some(item => item.productId === product.id);
   
-      let updatedCart: CartItem[]
-      if (isInCart) {
-        // Xóa khỏi giỏ hàng
-        updatedCart = prevCart.filter((item) => item.productId !== product.id)
-      } else {
-        // Thêm vào giỏ hàng
-        const newCartItem: CartItem = {
-          id: Date.now(),
-          userId: Number(user.id),
-          productId: product.id,
-          product: product,
-          quantity: 1,
-        }
-        updatedCart = [...prevCart, newCartItem]
+    if (isInCartNow) {
+      // Nếu đã có → xóa khỏi backend và cập nhật lại cart
+      await removeFromCart(product.id);
+      await fetchCartFromDB(Number(user.id)); // cập nhật cart có ID
+    } else {
+      try {
+        const res = await fetch('http://localhost:8081/api/cart/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: Number(user.id),
+            productId: product.id,
+            quantity: 1
+          })
+        });
+  
+        if (!res.ok) throw new Error("Lỗi khi thêm vào giỏ hàng");
+  
+        // Sau khi thêm, fetch lại cart để có ID
+        await fetchCartFromDB(Number(user.id));
+      } catch (error) {
+        console.error("Lỗi khi toggle sản phẩm vào giỏ hàng:", error);
       }
+    }
+  };
   
-      console.log("Updated cart:", updatedCart)
-      saveCartToDB(Number(user.id), updatedCart)
-  
-      return updatedCart
-    })
-  }
 
-  const removeFromCart = (productId: number) => {
+  const removeFromCart = async (productId: number) => {
     if (!user) {
       console.warn("Bạn chưa đăng nhập nên không thể thao tác giỏ hàng");
       return;
     }
-  
-    setCart((prevCart) => {
-      // Lọc giỏ hàng để loại bỏ sản phẩm theo productId
-      const updatedCart = prevCart.filter((item) => item.productId !== productId);
-  
-      if (!user) {
-        // Nếu chưa đăng nhập, lưu vào localStorage
-        localStorage.setItem("cart", JSON.stringify(updatedCart));
-      } else {
-        // Nếu đã đăng nhập, gọi hàm lưu giỏ hàng vào DB
-        saveCartToDB(Number(user.id), updatedCart);
-      }
-  
-      return updatedCart;
-    });
+
+    if (isLoading || !user) {
+      console.warn("Chưa sẵn sàng thao tác giỏ hàng");
+      return;
+    }
+
+    try {
+      // Find the cart item ID
+      const cartItem = cart.find(item => item.productId == productId);
+      if (!cartItem) return;
+
+      console.log("Cart hiện tại:", cart);
+      console.log("Sản phẩm cần xóa:", cartItem);
+
+      // Call backend API to delete
+      await fetch(`http://localhost:8081/api/cart/delete/${cartItem.id}`, {
+        method: 'DELETE'
+      });
+      
+      // 🟢 Gọi lại để cập nhật cart với id từ DB
+      await fetchCartFromDB(Number(user.id));
+    } catch (error) {
+      console.error("Failed to remove item from cart:", error);
+    }
   };
 
-  const updateQuantity = (cartItemId: number, quantity: number) => {
+  const updateQuantity = async (cartItemId: number, quantity: number) => {
     if (!user) {
       console.warn("Bạn chưa đăng nhập nên không thể thao tác giỏ hàng")
       return
     }
 
-    setCart((prevCart) =>
-      prevCart.map((item) =>
-        item.id === cartItemId ? { ...item, quantity } : item
+    if (isLoading || !user) {
+      console.warn("Chưa sẵn sàng thao tác giỏ hàng");
+      return;
+    }
+
+    try {
+      // Call backend API to update quantity
+      await fetch(`http://localhost:8081/api/cart/update/${cartItemId}?quantity=${quantity}`, {
+        method: 'PUT'
+      });
+
+      // Update local state
+      setCart(prevCart =>
+        prevCart.map(item =>
+          item.id === cartItemId ? { ...item, quantity } : item
+        )
       )
-    )
+    } catch (error) {
+      console.error("Failed to update cart item quantity:", error);
+    }
   }
 
-  const clearCart = () => {
+  const clearCart = async () => {
     if (!user) {
       console.warn("Bạn chưa đăng nhập nên không thể thao tác giỏ hàng")
       return
     }
 
-    setCart([])
+    if (isLoading || !user) {
+      console.warn("Chưa sẵn sàng thao tác giỏ hàng");
+      return;
+    }
+
+    try {
+      // Call backend API to clear cart
+      await fetch(`http://localhost:8081/api/cart/clear/${user.id}`, {
+        method: 'DELETE'
+      });
+
+      // Update local state
+      setCart([])
+    } catch (error) {
+      console.error("Failed to clear cart:", error);
+    }
   }
 
   const isInCart = (productId: number) => {
@@ -136,11 +202,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const saveCartToDB = async (userId: number, cart: CartItem[]) => {
     try {
-      await fetch(`/api/cart/${userId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(cart),
-      })
+      // Convert cart items to backend format
+      const cartItems = cart.map(item => ({
+        userId: userId,
+        productId: item.productId,
+        quantity: item.quantity
+      }))
+
+      // Send each item to backend
+      for (const item of cartItems) {
+        await fetch('http://localhost:8081/api/cart/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(item)
+        })
+      }
+
     } catch (error) {
       console.error("Failed to save cart to DB:", error)
     }
@@ -161,4 +238,4 @@ export function useCart() {
     throw new Error("useCart must be used within a CartProvider")
   }
   return context
-}
+} 

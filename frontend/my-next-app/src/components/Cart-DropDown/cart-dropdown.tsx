@@ -1,92 +1,3 @@
-// "use client"
-
-// import { useCart } from "@/context/CartContext"
-// import { Button } from "@/components/ui/button"
-// import { ShoppingCart, X } from "lucide-react"
-// import Image from "next/image"
-// import Link from "next/link"
-// import { motion } from "framer-motion"
-// import { formatCurrency } from "@/lib/utils"
-
-// interface CartDropdownProps {
-//   onClose: () => void
-// }
-
-// export default function CartDropdown({ onClose }: CartDropdownProps) {
-//   const { cart, removeFromCart } = useCart()
-
-//   const totalPrice = cart.reduce((total, item) => total + item.product.price * item.quantity, 0)
-
-//   return (
-//     <div className="bg-white border rounded-lg shadow-lg overflow-hidden">
-//       <div className="p-4 border-b flex items-center justify-between">
-//         <h3 className="font-medium flex items-center">
-//           <ShoppingCart className="h-4 w-4 mr-2" />
-//           Giỏ hàng ({cart.length})
-//         </h3>
-//         <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
-//           <X className="h-4 w-4" />
-//         </Button>
-//       </div>
-
-//       <div className="max-h-80 overflow-y-auto p-4">
-//         {cart.length === 0 ? (
-//           <div className="text-center py-6 text-gray-500">Giỏ hàng của bạn đang trống</div>
-//         ) : (
-//           <div className="space-y-4">
-//             {cart.map((item) => (
-//               <motion.div
-//                 key={item.id}
-//                 initial={{ opacity: 0, height: 0 }}
-//                 animate={{ opacity: 1, height: "auto" }}
-//                 exit={{ opacity: 0, height: 0 }}
-//                 className="flex items-center gap-3"
-//               >
-//                 <div className="relative w-16 h-16 flex-shrink-0">
-//                   <Image src={item.product.imageUrls[0] || "/placeholder.svg"} alt={item.product.name} fill className="object-cover rounded" />
-//                 </div>
-//                 <div className="flex-1 min-w-0">
-//                   <h4 className="font-medium text-sm truncate">{item.product.name}</h4>
-//                   <div className="flex items-center justify-between mt-1">
-//                     <span className="text-sm text-gray-500">
-//                       {item.quantity} x {formatCurrency(item.product.price)}
-//                     </span>
-//                     <Button
-//                       variant="ghost"
-//                       size="icon"
-//                       className="h-6 w-6 text-red-500"
-//                       onClick={() => removeFromCart(item.id)}
-//                     >
-//                       <X className="h-3 w-3" />
-//                     </Button>
-//                   </div>
-//                 </div>
-//               </motion.div>
-//             ))}
-//           </div>
-//         )}
-//       </div>
-
-//       {cart.length > 0 && (
-//         <div className="p-4 border-t">
-//           <div className="flex justify-between mb-4">
-//             <span className="font-medium">Tổng cộng:</span>
-//             <span className="font-bold">{formatCurrency(totalPrice)}</span>
-//           </div>
-//           <div className="grid grid-cols-2 gap-2">
-//             <Link href="/gio-hang" className="col-span-2">
-//               <Button className="w-full" onClick={onClose}>
-//                 Xem giỏ hàng
-//               </Button>
-//             </Link>
-//           </div>
-//         </div>
-//       )}
-//     </div>
-//   )
-// }
-
-
 "use client"
 
 import { useState } from "react"
@@ -106,7 +17,7 @@ import { useAuth } from "@/hooks/useAuth"
 export function CartDropdown() {
   const [isOpen, setIsOpen] = useState(false)
   const { cart, removeFromCart, updateQuantity} = useCart()
-   const { isLoggedIn, userId, fullName } = useAuth();
+  const { isLoggedIn, userId, fullName } = useAuth();
   const toggleDropdown = () => setIsOpen(!isOpen)
 
   const handleQuantityChange = (id: number, newQuantity: number) => {
@@ -156,7 +67,7 @@ export function CartDropdown() {
                   <X className="h-4 w-4" />
                 </Button>
               </div>
-
+              
               {cart.length === 0 ? (
                 <div className="p-6 text-center">
                   <div className="mx-auto w-16 h-16 rounded-full bg-pink-50 flex items-center justify-center mb-3">
@@ -173,7 +84,7 @@ export function CartDropdown() {
                 </div>
               ) : (
                 <>
-                  <ScrollArea className="max-h-[300px]">
+                  <ScrollArea className="max-h-[300px] overflow-y-auto">
                     <div className="p-4 space-y-4">
                       {cart.map((item) => (
                         <motion.div
@@ -205,7 +116,11 @@ export function CartDropdown() {
                                   variant="ghost"
                                   size="icon"
                                   className="h-7 w-7 rounded-none text-pink-500 hover:bg-pink-50"
-                                  onClick={() => handleQuantityChange(item.id, (item.quantity || 1) - 1)}
+                                  onClick={() => {
+                                    if (item.id !== undefined && item.quantity > 1) {
+                                      handleQuantityChange(item.id, item.quantity - 1)
+                                    }
+                                  }}                                  
                                 >
                                   <Minus className="h-3 w-3" />
                                 </Button>
@@ -214,7 +129,13 @@ export function CartDropdown() {
                                   variant="ghost"
                                   size="icon"
                                   className="h-7 w-7 rounded-none text-pink-500 hover:bg-pink-50"
-                                  onClick={() => handleQuantityChange(item.id, (item.quantity || 1) + 1)}
+                                  onClick={() => {
+                                    if (item.id !== undefined) {
+                                      handleQuantityChange(item.id, (item.quantity || 1) + 1)
+                                    } else {
+                                      console.warn("Không thể tăng số lượng vì thiếu ID của cart item")
+                                    }
+                                  }}
                                 >
                                   <Plus className="h-3 w-3" />
                                 </Button>

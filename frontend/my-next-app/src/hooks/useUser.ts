@@ -4,6 +4,7 @@ import axios from "axios";
 
 export function useUser() {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -13,11 +14,13 @@ export function useUser() {
       } catch (error) {
         console.error("Không thể lấy thông tin người dùng:", error);
         setUser(null);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchUser();
   }, []);
 
-  return user;
+  return {user, isLoading};
 }

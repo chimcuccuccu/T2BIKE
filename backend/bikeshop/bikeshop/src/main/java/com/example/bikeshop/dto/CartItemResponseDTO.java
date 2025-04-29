@@ -8,6 +8,8 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class CartItemResponseDTO {
+    private Long id;
+    private Long productId;
     private String productName;
     private int quantity;
     private Double price;

@@ -1,11 +1,15 @@
 package com.example.bikeshop.controller;
 
 import com.example.bikeshop.dto.CartItemRequestDTO;
+import com.example.bikeshop.dto.CartItemResponseDTO;
 import com.example.bikeshop.dto.CartResponseDTO;
+import com.example.bikeshop.entity.CartItem;
 import com.example.bikeshop.service.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/cart")
@@ -45,5 +49,11 @@ public class CartItemController {
     public ResponseEntity<?> clearCart(@PathVariable Long userId) {
         cartService.clearCart(userId);
         return ResponseEntity.ok("Đã xóa hết giỏ hàng");
+    }
+
+    // Endpoint đồng bộ giỏ hàng
+    @PostMapping("/sync/{userId}")
+    public void syncCart(@PathVariable Long userId, @RequestBody List<CartItem> items) {
+        cartService.syncCart(userId, items);
     }
 }

@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils"
 import { Product } from "@/types/product"
 import { useUser } from "@/hooks/useUser"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 
 interface ProductCardProps {
   product: Product
@@ -138,7 +139,11 @@ export function ProductCard({ product }: ProductCardProps) {
       </div>
 
       <div className="p-4">
-        <h3 className="font-medium text-gray-800 line-clamp-1">{product.name}</h3>
+      <Link href={`/product-detail/${product.id}`}>
+        <h3 className="font-medium text-gray-800 line-clamp-1 hover:underline cursor-pointer">
+          {product.name}
+        </h3>
+      </Link>
         <p className="mt-1 text-pink-500 font-bold">{product.price.toLocaleString("vi-VN")} ₫</p>
       </div>
 
