@@ -36,11 +36,14 @@ public class WishlistService {
         List<WishlistItemViewDTO> itemDTOs = wishlistItems.stream().map(item -> {
             Product product = item.getProduct();
             return new WishlistItemViewDTO(
-                    product.getName(),
-                    1, // mặc định 1
-                    product.getPrice()
+                    item.getId(),              // item id from wishlist
+                    product.getId(),           // product id
+                    product.getName(),         // product name
+                    product.getPrice(),        // product price
+                    1                           // default quantity set to 1
             );
         }).collect(Collectors.toList());
+
 
         return new WishlistResponseDTO(user.getFullName(), itemDTOs);
     }
