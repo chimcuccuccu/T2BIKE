@@ -16,7 +16,7 @@ import { useAuth } from "@/hooks/useAuth"
 
 export function CartDropdown() {
   const [isOpen, setIsOpen] = useState(false)
-  const { cart, removeFromCart, updateQuantity} = useCart()
+  const { cart, removeFromCart, updateQuantity } = useCart()
   const { isLoggedIn, userId, fullName } = useAuth();
   const toggleDropdown = () => setIsOpen(!isOpen)
 
@@ -67,7 +67,7 @@ export function CartDropdown() {
                   <X className="h-4 w-4" />
                 </Button>
               </div>
-              
+
               {cart.length === 0 ? (
                 <div className="p-6 text-center">
                   <div className="mx-auto w-16 h-16 rounded-full bg-pink-50 flex items-center justify-center mb-3">
@@ -120,7 +120,7 @@ export function CartDropdown() {
                                     if (item.id !== undefined && item.quantity > 1) {
                                       handleQuantityChange(item.id, item.quantity - 1)
                                     }
-                                  }}                                  
+                                  }}
                                 >
                                   <Minus className="h-3 w-3" />
                                 </Button>
