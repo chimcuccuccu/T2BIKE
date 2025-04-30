@@ -81,7 +81,8 @@ export function ProductCard({ product }: ProductCardProps) {
             title: "Vui lòng đăng nhập!",
             description: (
             <>
-                Bạn cần đăng nhập để thêm sản phẩm vào danh sách yêu thích.
+                Bạn cần đăng nhập để thêm sản phẩm vào danh sách yêu thích
+                <br />
                 <Button
                 size="sm"
                 variant="link"

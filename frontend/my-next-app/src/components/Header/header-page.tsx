@@ -87,9 +87,9 @@ export const HeaderPage = () => {
 
                             <div className="flex items-center space-x-4">
                                 <SearchComponent></SearchComponent>
-
-                                <CartDropdown></CartDropdown>
                                 <WishlistDropdown></WishlistDropdown>
+                                <CartDropdown></CartDropdown>
+                               
 
 
                                 <div className="flex items-center space-x-4">
