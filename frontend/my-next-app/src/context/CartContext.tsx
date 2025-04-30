@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect, type ReactNode } from "
 import { CartItem } from "@/types/cart-item"
 import { Product } from "@/types/product"
 import { useUser } from "@/hooks/useUser"
+import { useToast } from "@/hooks/use-toast"
 
 type CartContextType = {
   cart: CartItem[]
@@ -19,7 +20,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([])
   const { user, isLoading } = useUser()
-
+  const { toast } = useToast()
   // Lấy giỏ hàng từ localStorage hoặc API nếu người dùng đã đăng nhập
   useEffect(() => {
     if (isLoading) return;
