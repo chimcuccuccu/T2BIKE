@@ -13,6 +13,7 @@ import { useUser } from "@/hooks/useUser"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useStore } from "@/lib/store"
+import { useWishlist } from "@/context/WishlistContext"
 
 interface ProductCardProps {
     product: Product
@@ -24,7 +25,7 @@ export function ProductCard({ product }: ProductCardProps) {
     const { toast } = useToast()
     const [isHovered, setIsHovered] = useState(false)
     const router = useRouter();
-    const { addToWishlist, removeFromWishlist, isInWishlist } = useStore()
+    const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
 
     const handleAddToCart = () => {
         if (!user) {
@@ -176,6 +177,14 @@ export function ProductCard({ product }: ProductCardProps) {
             <div className="absolute top-2 right-2">
             <span className="bg-pink-500 text-white text-xs px-2 py-1 rounded-full">Trong giỏ hàng</span>
             </div>
+        )}
+
+        {inWishlist && (
+        <div className="absolute top-2 left-2">
+            <span className="bg-yellow-500 text-white text-xs px-2 py-1 rounded-full">
+            Đã yêu thích
+            </span>
+        </div>
         )}
         </motion.div>
     )
