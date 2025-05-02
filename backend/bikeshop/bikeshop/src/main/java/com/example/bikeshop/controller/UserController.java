@@ -43,8 +43,7 @@ public class UserController {
         try {
             User user = userService.login(userDTO.getUsername(), userDTO.getPassword());
             if (user != null) {
-                session.setAttribute("user", user);
-
+                session.setAttribute("userId", user.getId());
                 Cookie cookie = new Cookie("authToken", user.getUsername());
                 cookie.setHttpOnly(true);
                 cookie.setMaxAge(3600);
@@ -86,13 +85,17 @@ public class UserController {
     // Kiểm tra thông tin user hiện tại trong session
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(HttpSession session) {
-        // Kiểm tra xem session có chứa user hay không
-        Object userObj = session.getAttribute("user");
-        if (userObj == null) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Chưa đăng nhập");
         }
 
-        User user = (User) userObj;
-        return ResponseEntity.ok(user);
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy người dùng");
+        }
+
+        return ResponseEntity.ok(userOpt.get());
     }
+
 }
