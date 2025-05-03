@@ -1,9 +1,12 @@
 package com.example.bikeshop.service;
 
 import com.example.bikeshop.dto.CreateOrderRequest;
+import com.example.bikeshop.dto.ShippingInfoDTO;
+import com.example.bikeshop.dto.ShippingInfoRequest;
 import com.example.bikeshop.entity.*;
 import com.example.bikeshop.repository.OrderRepository;
 import com.example.bikeshop.repository.ProductRepository;
+import com.example.bikeshop.repository.ShippingInfoRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,6 +23,8 @@ public class OrderService {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private ShippingInfoRepository shippingInfoRepository;
     public Order getOrderById(Long orderId) {
         return orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
@@ -32,7 +37,6 @@ public class OrderService {
         order.setStatus(OrderStatus.PENDING);
 
         List<OrderItem> items = new ArrayList<>();
-
         for (CreateOrderRequest.ItemRequest itemReq : request.getItems()) {
             Product product = productRepository.findById(itemReq.getProductId())
                     .orElseThrow(() -> new RuntimeException("Product not found"));
@@ -45,10 +49,30 @@ public class OrderService {
 
             items.add(item);
         }
-
         order.setItems(items);
-        return orderRepository.save(order);
+
+        // 1. Lưu Order trước
+        order = orderRepository.save(order);  // Order cần được lưu trước
+
+        // 2. Tạo và lưu ShippingInfo sau khi Order đã lưu
+        ShippingInfoRequest shippingInfoRequest = request.getShippingInfo();
+        ShippingInfo shippingInfo = new ShippingInfo();
+        shippingInfo.setOrder(order);
+        shippingInfo.setReceiverName(shippingInfoRequest.getReceiverName());
+        shippingInfo.setPhone(shippingInfoRequest.getPhone());
+        shippingInfo.setProvince(shippingInfoRequest.getProvince());
+        shippingInfo.setDistrict(shippingInfoRequest.getDistrict());
+        shippingInfo.setAddress(shippingInfoRequest.getAddress());
+        shippingInfo.setNote(shippingInfoRequest.getNote());
+
+        // Lưu ShippingInfo
+        shippingInfoRepository.save(shippingInfo);
+
+        order.setShippingInfo(shippingInfo);
+        // Trả về Order đã lưu
+        return order;
     }
+
 
     public Order updateOrder(Long orderId, Order updatedOrder) {
         Order existingOrder = orderRepository.findById(orderId)
