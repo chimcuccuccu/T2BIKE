@@ -1,5 +1,6 @@
 package com.example.bikeshop.dto;
 
+import com.example.bikeshop.entity.ShippingInfo;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,6 +11,7 @@ import java.util.List;
 public class CreateOrderRequest {
     private String customerName;
     private List<ItemRequest> items;
+    private ShippingInfoRequest shippingInfo;
 
     @Getter
     @Setter
