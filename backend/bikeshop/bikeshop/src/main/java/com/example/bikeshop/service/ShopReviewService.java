@@ -6,6 +6,8 @@ import com.example.bikeshop.entity.ShopReview;
 import com.example.bikeshop.entity.User;
 import com.example.bikeshop.repository.ShopReviewRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,12 +28,17 @@ public class ShopReviewService {
         return toResponse(review);
     }
 
-    public List<ShopReviewResponse> getAllReviews() {
-        return reviewRepository.findAll()
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+    public Page<ShopReviewResponse> getAllReviews(int page, int size) {
+        Page<ShopReview> reviewPage = reviewRepository.findAll(PageRequest.of(page, size));
+        return reviewPage.map(review -> new ShopReviewResponse(
+                review.getId(),
+                review.getComment(),
+                review.getRating(),
+                review.getUser().getUsername(),
+                review.getCreatedAt()
+        ));
     }
+
 
     public ShopReviewResponse updateReview(Long id, ShopReviewRequest req, User user) {
         ShopReview review = reviewRepository.findById(id)
@@ -57,6 +64,23 @@ public class ShopReviewService {
 
         reviewRepository.delete(review);
     }
+
+    public List<ShopReviewResponse> getReviewsByUser(Long userId) {
+        List<ShopReview> reviews = reviewRepository.findByUserId(userId);
+        return reviews.stream()
+                .map(review -> new ShopReviewResponse(review))
+                .collect(Collectors.toList());
+    }
+
+    public Double getAverageRating() {
+        Double avgRating = reviewRepository.findAverageRating();
+        return avgRating != null ? avgRating : 0.0;
+    }
+
+    public boolean hasReviewed(Long userId) {
+        return reviewRepository.existsByUserId(userId);
+    }
+
 
     private ShopReviewResponse toResponse(ShopReview review) {
         ShopReviewResponse res = new ShopReviewResponse();
