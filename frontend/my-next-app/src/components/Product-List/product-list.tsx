@@ -38,26 +38,26 @@ export function ProductList({
 
   const handleAddToCart = (product: Product) => {
     const user = useUser();  // Lấy thông tin người dùng từ useUser
-  
+
     if (!user) {
       toast({
         title: "Bạn chưa đăng nhập",
         description: "Vui lòng đăng nhập để thêm vào giỏ hàng.",
         variant: "destructive",
-        
+
       });
       router.push("/login");
       return;
       console.log("hihi")
     }
-  
+
     addToCart(product);  // Thêm vào giỏ hàng mà không cần truyền userId
     toast({
       title: "Đã thêm vào giỏ hàng",
       description: `${product.name} đã được thêm vào giỏ hàng.`,
     });
   };
-  
+
   return (
     <div className="flex-1">
       <h2 className="text-2xl font-bold mb-4">
@@ -88,29 +88,28 @@ export function ProductList({
       {/* Pagination */}
       <div className="flex justify-center mt-8">
         <Button
-          onClick={() => onPageChange(Math.max(currentPage - 1, 1))}
+          onClick={() => onPageChange(Math.max(currentPage - 1, 0))}
           className="px-4 py-2 mx-1 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors"
-          disabled={currentPage === 1}
+          disabled={currentPage === 0}
         >
           Trước
         </Button>
         {Array.from({ length: totalPages }, (_, i) => (
           <Button
-            key={i + 1}
-            onClick={() => onPageChange(i + 1)}
-            className={`px-4 py-2 mx-1 rounded-lg transition-colors ${
-              currentPage === i + 1
+            key={i}
+            onClick={() => onPageChange(i)}
+            className={`px-4 py-2 mx-1 rounded-lg transition-colors ${currentPage === i
                 ? "bg-pink-500 text-white"
                 : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
+              }`}
           >
             {i + 1}
           </Button>
         ))}
         <Button
-          onClick={() => onPageChange(Math.min(currentPage + 1, totalPages))}
+          onClick={() => onPageChange(Math.min(currentPage + 1, totalPages - 1))}
           className="px-4 py-2 mx-1 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors"
-          disabled={currentPage === totalPages}
+          disabled={currentPage === totalPages - 1}
         >
           Sau
         </Button>
