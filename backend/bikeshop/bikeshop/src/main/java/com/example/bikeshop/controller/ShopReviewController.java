@@ -7,6 +7,7 @@ import com.example.bikeshop.repository.UserRepository;
 import com.example.bikeshop.service.ShopReviewService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -31,12 +32,36 @@ public class ShopReviewController {
         }
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+        boolean alreadyReviewed = reviewService.hasReviewed(userId);
+
+        if (alreadyReviewed) {
+            return ResponseEntity.status(400).body("Bạn đã đánh giá cửa hàng rồi.");
+        }
+
         return ResponseEntity.ok(reviewService.createReview(req, user));
     }
 
+    @GetMapping("/user")
+    public ResponseEntity<?> getReviewsByUser(HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(401).body("Bạn cần đăng nhập để xem đánh giá của mình.");
+        }
+        return ResponseEntity.ok(reviewService.getReviewsByUser(userId));
+    }
+
+    @GetMapping("/average-rating")
+    public ResponseEntity<Double> getAverageRating() {
+        return ResponseEntity.ok(reviewService.getAverageRating());
+    }
+
     @GetMapping
-    public List<ShopReviewResponse> getAllReviews() {
-        return reviewService.getAllReviews();
+    public Page<ShopReviewResponse> getAllReviews(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "9") int size
+    ) {
+        return reviewService.getAllReviews(page, size);
     }
 
     @PutMapping("/{id}")
