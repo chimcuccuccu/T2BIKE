@@ -11,6 +11,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -37,6 +38,8 @@ public class OrderService {
         order.setStatus(OrderStatus.PENDING);
 
         List<OrderItem> items = new ArrayList<>();
+        BigDecimal totalPrice = BigDecimal.ZERO;
+
         for (CreateOrderRequest.ItemRequest itemReq : request.getItems()) {
             Product product = productRepository.findById(itemReq.getProductId())
                     .orElseThrow(() -> new RuntimeException("Product not found"));
@@ -47,14 +50,21 @@ public class OrderService {
             item.setQuantity(itemReq.getQuantity());
             item.setPriceAtOrder(product.getPrice());
 
+            BigDecimal price = BigDecimal.valueOf(product.getPrice());
+            BigDecimal itemTotal = price.multiply(BigDecimal.valueOf(itemReq.getQuantity()));
+
+            totalPrice = totalPrice.add(itemTotal);
+
             items.add(item);
         }
+
         order.setItems(items);
+        order.setTotalPrice(totalPrice);
 
         // 1. Lưu Order trước
-        order = orderRepository.save(order);  // Order cần được lưu trước
+        order = orderRepository.save(order);
 
-        // 2. Tạo và lưu ShippingInfo sau khi Order đã lưu
+        // 2. Tạo và lưu ShippingInfo
         ShippingInfoRequest shippingInfoRequest = request.getShippingInfo();
         ShippingInfo shippingInfo = new ShippingInfo();
         shippingInfo.setOrder(order);
@@ -69,10 +79,8 @@ public class OrderService {
         shippingInfoRepository.save(shippingInfo);
 
         order.setShippingInfo(shippingInfo);
-        // Trả về Order đã lưu
         return order;
     }
-
 
     public Order updateOrder(Long orderId, Order updatedOrder) {
         Order existingOrder = orderRepository.findById(orderId)
