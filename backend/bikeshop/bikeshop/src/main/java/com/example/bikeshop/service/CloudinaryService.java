@@ -41,7 +41,7 @@ public class CloudinaryService {
         try {
             return cloudinary.uploader().upload(file, ObjectUtils.emptyMap());
         } finally {
-            file.delete(); // luôn xóa file tạm
+            file.delete();
         }
     }
 

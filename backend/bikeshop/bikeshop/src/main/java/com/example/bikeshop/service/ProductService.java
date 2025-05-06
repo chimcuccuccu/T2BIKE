@@ -66,4 +66,9 @@ public class ProductService {
     public Page<Product> searchProducts(String keyword, Pageable pageable) {
         return productRepository.searchAllFields(keyword, pageable);
     }
+
+    public Product save(Product product) {
+        return productRepository.save(product);
+    }
+
 }
