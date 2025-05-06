@@ -9,6 +9,10 @@ import com.example.bikeshop.repository.ProductRepository;
 import com.example.bikeshop.repository.ShippingInfoRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -52,7 +56,6 @@ public class OrderService {
 
             BigDecimal price = BigDecimal.valueOf(product.getPrice());
             BigDecimal itemTotal = price.multiply(BigDecimal.valueOf(itemReq.getQuantity()));
-
             totalPrice = totalPrice.add(itemTotal);
 
             items.add(item);
@@ -119,7 +122,9 @@ public class OrderService {
         orderRepository.delete(order);
     }
 
-    public List<Order> getAllOrders() {
-        return orderRepository.findAll();
+    public Page<Order> getAllOrdersPaginated(int page, int size, String sortBy, String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return orderRepository.findAll(pageable);
     }
 }

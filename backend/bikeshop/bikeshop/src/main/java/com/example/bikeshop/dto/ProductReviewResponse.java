@@ -16,6 +16,8 @@ public class ProductReviewResponse {
     private String comment;
     private LocalDateTime createdAt;
     private String productName;
+    private String answer;
+    private LocalDateTime answeredAt;
 
     public ProductReviewResponse(ProductReview review) {
         this.id = review.getId();
@@ -23,5 +25,7 @@ public class ProductReviewResponse {
         this.comment = review.getComment();
         this.createdAt = review.getCreatedAt();
         this.productName = review.getProduct().getName();
+        this.answer = review.getAnswer();
+        this.answeredAt = review.getAnsweredAt();
     }
 }

@@ -3,6 +3,7 @@ package com.example.bikeshop.service;
 import com.example.bikeshop.entity.Product;
 import com.example.bikeshop.repository.ProductRepository;
 import com.example.bikeshop.specification.ProductSpecification;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -19,6 +20,8 @@ import java.util.Optional;
 public class ProductService {
     @Autowired
     private ProductRepository productRepository;
+
+    private HttpSession session;
 
     public Page<Product> getAllProduct(Pageable pageable) {
         return productRepository.findAll(pageable);
@@ -37,7 +40,8 @@ public class ProductService {
     }
 
     public Product updateProduct(Long id, Product product) {
-        Product existingProduct = productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
+        Product existingProduct = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
         existingProduct.setName(product.getName());
         existingProduct.setCategory(product.getCategory());
         existingProduct.setPrice(product.getPrice());
@@ -50,7 +54,8 @@ public class ProductService {
         productRepository.delete(product);
     }
 
-    public Page<Product> filterProducts(String category, String brand, Double minPrice, Double maxPrice, Pageable pageable) {
+    public Page<Product> filterProducts(String category, String brand, Double minPrice, Double maxPrice,
+            Pageable pageable) {
         Specification<Product> spec = Specification.where(ProductSpecification.hasCategory(category))
                 .and(ProductSpecification.hasBrand(brand))
                 .and(ProductSpecification.hasPriceBetween(minPrice, maxPrice));

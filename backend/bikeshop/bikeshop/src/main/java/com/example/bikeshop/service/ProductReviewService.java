@@ -11,6 +11,7 @@ import com.example.bikeshop.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -35,7 +36,9 @@ public class ProductReviewService {
                 review.getUser().getUsername(),
                 review.getComment(),
                 review.getCreatedAt(),
-                review.getProduct().getName()
+                review.getProduct().getName(),
+                review.getAnswer(),
+                review.getAnsweredAt()
         ));
     }
 
@@ -63,7 +66,9 @@ public class ProductReviewService {
                         r.getUser().getUsername(),
                         r.getComment(),
                         r.getCreatedAt(),
-                        r.getProduct().getName()))
+                        r.getProduct().getName(),
+                        r.getAnswer(),
+                        r.getAnsweredAt()))
                 .collect(Collectors.toList());
     }
 
@@ -89,5 +94,58 @@ public class ProductReviewService {
         review.setComment(request.getComment());
         reviewRepository.save(review);
     }
+
+    public void answerReview(Long reviewId, String answer, Long adminId) {
+        User admin = userRepository.findById(adminId)
+                .orElseThrow(() -> new RuntimeException("Admin không tồn tại"));
+
+        if (!admin.getRole().equals("admin")) {
+            throw new RuntimeException("Bạn không có quyền trả lời câu hỏi");
+        }
+
+        ProductReview review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("Đánh giá không tồn tại"));
+
+        review.setAnswer(answer);
+        review.setAnsweredAt(LocalDateTime.now());
+        reviewRepository.save(review);
+    }
+
+    // Sửa câu trả lời
+    public void updateAnswer(Long reviewId, String newAnswer, Long adminId) {
+        ProductReview review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đánh giá"));
+
+        if (!review.getUser().getId().equals(adminId) &&
+                !userRepository.findById(adminId).map(u -> u.getRole().equals("admin")).orElse(false)) {
+            throw new RuntimeException("Không có quyền chỉnh sửa câu trả lời");
+        }
+
+        review.setAnswer(newAnswer);
+        review.setAnsweredAt(LocalDateTime.now());
+        reviewRepository.save(review);
+    }
+
+    // Xoá câu trả lời
+    public void deleteAnswer(Long reviewId, Long adminId) {
+        ProductReview review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đánh giá"));
+
+        if (!userRepository.findById(adminId).map(u -> u.getRole().equals("admin")).orElse(false)) {
+            throw new RuntimeException("Không có quyền xoá câu trả lời");
+        }
+
+        review.setAnswer(null);
+        review.setAnsweredAt(null);
+        reviewRepository.save(review);
+    }
+
+    // Lấy danh sách câu trả lời (có phân trang)
+    public Page<ProductReviewResponse> getAllAnswers(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return reviewRepository.findByAnswerIsNotNull(pageable)
+                .map(ProductReviewResponse::new);
+    }
+
 }
 

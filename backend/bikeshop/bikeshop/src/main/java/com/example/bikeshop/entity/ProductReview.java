@@ -29,4 +29,10 @@ public class ProductReview {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "answer")
+    private String answer;
+
+    @Column(name = "answered_at")
+    private LocalDateTime answeredAt = LocalDateTime.now();
 }

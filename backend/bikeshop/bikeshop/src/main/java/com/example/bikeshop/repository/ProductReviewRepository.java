@@ -11,5 +11,8 @@ import java.util.List;
 @Repository
 public interface ProductReviewRepository extends JpaRepository<ProductReview, Long> {
     List<ProductReview> findByProductId(Long productId);
+
     Page<ProductReview> findAll(Pageable pageable);
+
+    Page<ProductReview> findByAnswerIsNotNull(Pageable pageable);
 }
