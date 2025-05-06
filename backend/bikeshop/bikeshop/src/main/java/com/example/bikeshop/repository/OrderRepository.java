@@ -2,6 +2,8 @@ package com.example.bikeshop.repository;
 
 import com.example.bikeshop.dto.RevenueByTimeResponse;
 import com.example.bikeshop.entity.Order;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,6 +22,5 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @Query("SELECT SUM(o.totalPrice) FROM Order o WHERE FUNCTION('YEAR', o.createdAt) = :year")
     Double getRevenueByYear(@Param("year") int year);
-
 
 }
