@@ -39,40 +39,52 @@ public class ImageController {
 
     @PostMapping("/upload/{productId}")
     @ResponseBody
-    public ResponseEntity<String> upload(@RequestParam MultipartFile multipartFile, @PathVariable Long productId) throws IOException {
-        Product product = productService.getProductById(productId);
+    public ResponseEntity<?> uploadMultiple(
+            @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
+            @PathVariable Long productId
+    ) throws IOException {
+        // Lấy entity Product từ DB
+        Product product = productService.getProductById(productId); // dùng phương thức trả về Product
         if (product == null) {
-            return new ResponseEntity<>("Product not found", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("Không tìm thấy sản phẩm", HttpStatus.NOT_FOUND);
         }
 
-        BufferedImage bi = ImageIO.read(multipartFile.getInputStream());
-        if (bi == null) {
-            return new ResponseEntity<>("Invalid image", HttpStatus.BAD_REQUEST);
+        List<String> uploadedUrls = new ArrayList<>();
+
+        for (MultipartFile file : multipartFiles) {
+            BufferedImage bi = ImageIO.read(file.getInputStream());
+            if (bi == null) {
+                return new ResponseEntity<>("Một trong các file ảnh không hợp lệ", HttpStatus.BAD_REQUEST);
+            }
+
+            Map<String, Object> result = cloudinaryService.upload(file);
+
+            Image image = new Image(
+                    (String) result.get("original_filename"),
+                    (String) result.get("url"),
+                    (String) result.get("public_id")
+            );
+            image.setProduct(product);
+            imageService.save(image); // Lưu ảnh có gắn với product
+
+            // Thêm URL vào danh sách ảnh trong product (nếu bạn dùng field imageUrls)
+            List<String> imageUrls = product.getImageUrls();
+            if (imageUrls == null) imageUrls = new ArrayList<>();
+            imageUrls.add((String) result.get("url"));
+            product.setImageUrls(imageUrls);
+
+            uploadedUrls.add((String) result.get("url"));
         }
 
-        Map<String, Object> result = cloudinaryService.upload(multipartFile);
+        // Lưu lại product với imageUrls mới (nếu có)
+        productService.saveEntity(product); // phải có method nhận Product entity
 
-        Image image = new Image(
-                (String) result.get("original_filename"),
-                (String) result.get("url"),
-                (String) result.get("public_id")
-        );
-
-        System.out.println("Anh: " + result);
-
-        image.setProduct(product);
-        imageService.save(image);
-
-        List<String> imageUrls = product.getImageUrls();
-        if (imageUrls == null) {
-            imageUrls = new ArrayList<>();
-        }
-        imageUrls.add((String) result.get("url"));
-        product.setImageUrls(imageUrls);
-        productService.save(product);
-
-        return new ResponseEntity<>("Image uploaded successfully", HttpStatus.OK);
+        return ResponseEntity.ok(Map.of(
+                "message", "Tải ảnh thành công",
+                "uploadedImages", uploadedUrls
+        ));
     }
+
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> delete(@PathVariable("id") int id) {

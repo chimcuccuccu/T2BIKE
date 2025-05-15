@@ -1,5 +1,6 @@
 package com.example.bikeshop.service;
 
+import com.example.bikeshop.dto.ProductDTO;
 import com.example.bikeshop.entity.Product;
 import com.example.bikeshop.repository.ProductRepository;
 import com.example.bikeshop.specification.ProductSpecification;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -55,7 +57,7 @@ public class ProductService {
     }
 
     public Page<Product> filterProducts(String category, String brand, Double minPrice, Double maxPrice,
-            Pageable pageable) {
+                                        Pageable pageable) {
         Specification<Product> spec = Specification.where(ProductSpecification.hasCategory(category))
                 .and(ProductSpecification.hasBrand(brand))
                 .and(ProductSpecification.hasPriceBetween(minPrice, maxPrice));
@@ -67,7 +69,33 @@ public class ProductService {
         return productRepository.searchAllFields(keyword, pageable);
     }
 
-    public Product save(Product product) {
+    public ProductDTO save(ProductDTO dto) {
+        Product product = new Product();
+        product.setName(dto.getName());
+        product.setDescription(dto.getDescription());
+        product.setPrice(dto.getPrice());
+        product.setCategory(dto.getCategory());
+        product.setBrand(dto.getBrand());
+        product.setQuantity(dto.getQuantity());
+        product.setColor(Collections.singletonList(dto.getColor()));
+
+        Product saved = productRepository.save(product);
+
+        ProductDTO response = new ProductDTO();
+        response.setId(saved.getId());
+        response.setName(saved.getName());
+        response.setDescription(saved.getDescription());
+        response.setPrice(saved.getPrice());
+        response.setCategory(saved.getCategory());
+        response.setBrand(saved.getBrand());
+        response.setQuantity(saved.getQuantity());
+        response.setColor(String.valueOf(saved.getColor()));
+        response.setImageUrls(saved.getImageUrls());
+
+        return response;
+    }
+
+    public Product saveEntity(Product product) {
         return productRepository.save(product);
     }
 

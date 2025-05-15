@@ -1,8 +1,12 @@
 package com.example.bikeshop.controller;
 
+import com.example.bikeshop.dto.ProductDTO;
+import com.example.bikeshop.entity.Image;
 import com.example.bikeshop.entity.Product;
 import com.example.bikeshop.entity.User;
 import com.example.bikeshop.repository.UserRepository;
+import com.example.bikeshop.service.CloudinaryService;
+import com.example.bikeshop.service.ImageService;
 import com.example.bikeshop.service.ProductService;
 import com.example.bikeshop.specification.ProductSpecification;
 import jakarta.servlet.http.HttpSession;
@@ -18,6 +22,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Map;
@@ -31,6 +39,12 @@ public class ProductController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    CloudinaryService cloudinaryService;
+
+    @Autowired
+    ImageService imageService;
 
     @GetMapping
     public ResponseEntity<Page<Product>> getAllProduct(
@@ -52,8 +66,12 @@ public class ProductController {
         return ResponseEntity.ok(productService.getProductById(id));
     }
 
-    @PostMapping
-    public ResponseEntity<?> createProducts(@RequestBody List<Product> products, HttpSession session) {
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> createProductWithImages(
+            @RequestPart("product") ProductDTO productDTO,
+            @RequestPart("images") MultipartFile[] images,
+            HttpSession session
+    ) throws IOException {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Vui lòng đăng nhập");
@@ -66,8 +84,39 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Bạn không có quyền thêm sản phẩm");
         }
 
-        List<Product> savedProducts = productService.createProducts(products);
-        return ResponseEntity.ok(savedProducts);
+        ProductDTO savedProductDTO = productService.save(productDTO);
+
+        Product savedProductEntity = productService.getProductById(savedProductDTO.getId());
+
+        List<String> uploadedUrls = new ArrayList<>();
+        for (MultipartFile file : images) {
+            BufferedImage bi = ImageIO.read(file.getInputStream());
+            if (bi == null) {
+                return new ResponseEntity<>("File không hợp lệ", HttpStatus.BAD_REQUEST);
+            }
+
+            Map<String, Object> result = cloudinaryService.upload(file);
+
+            Image image = new Image(
+                    (String) result.get("original_filename"),
+                    (String) result.get("url"),
+                    (String) result.get("public_id")
+            );
+            image.setProduct(savedProductEntity);
+            imageService.save(image);
+
+            uploadedUrls.add((String) result.get("url"));
+        }
+        
+        savedProductEntity.setImageUrls(uploadedUrls);
+
+        productService.saveEntity(savedProductEntity);
+
+        return ResponseEntity.ok(Map.of(
+                "message", "Tạo sản phẩm thành công",
+                "product", savedProductDTO,
+                "uploadedImages", uploadedUrls
+        ));
     }
 
     @PutMapping("/{id}")
