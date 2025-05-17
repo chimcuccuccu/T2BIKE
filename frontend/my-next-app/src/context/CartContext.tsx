@@ -21,7 +21,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([])
   const { user, isLoading } = useUser()
   const { toast } = useToast()
-  // Lấy giỏ hàng từ localStorage hoặc API nếu người dùng đã đăng nhập
+
   useEffect(() => {
     if (isLoading) return;
 
@@ -87,9 +87,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const isInCartNow = cart.some(item => item.productId === product.id);
   
     if (isInCartNow) {
-      // Nếu đã có → xóa khỏi backend và cập nhật lại cart
       await removeFromCart(product.id);
-      await fetchCartFromDB(Number(user.id)); // cập nhật cart có ID
+      await fetchCartFromDB(Number(user.id)); 
     } else {
       try {
         const res = await fetch('http://localhost:8081/api/cart/add', {
@@ -104,7 +103,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
   
         if (!res.ok) throw new Error("Lỗi khi thêm vào giỏ hàng");
   
-        // Sau khi thêm, fetch lại cart để có ID
         await fetchCartFromDB(Number(user.id));
       } catch (error) {
         console.error("Lỗi khi toggle sản phẩm vào giỏ hàng:", error);
@@ -125,19 +123,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      // Find the cart item ID
       const cartItem = cart.find(item => item.productId == productId);
       if (!cartItem) return;
 
       console.log("Cart hiện tại:", cart);
       console.log("Sản phẩm cần xóa:", cartItem);
 
-      // Call backend API to delete
       await fetch(`http://localhost:8081/api/cart/delete/${cartItem.id}`, {
         method: 'DELETE'
       });
       
-      // 🟢 Gọi lại để cập nhật cart với id từ DB
       await fetchCartFromDB(Number(user.id));
     } catch (error) {
       console.error("Failed to remove item from cart:", error);
@@ -156,7 +151,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      // Call backend API to update quantity
       await fetch(`http://localhost:8081/api/cart/update/${cartItemId}?quantity=${quantity}`, {
         method: 'PUT'
       });
@@ -184,12 +178,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      // Call backend API to clear cart
       await fetch(`http://localhost:8081/api/cart/clear/${user.id}`, {
         method: 'DELETE'
       });
 
-      // Update local state
       setCart([])
     } catch (error) {
       console.error("Failed to clear cart:", error);
@@ -203,14 +195,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const saveCartToDB = async (userId: number, cart: CartItem[]) => {
     try {
-      // Convert cart items to backend format
       const cartItems = cart.map(item => ({
         userId: userId,
         productId: item.productId,
         quantity: item.quantity
       }))
 
-      // Send each item to backend
       for (const item of cartItems) {
         await fetch('http://localhost:8081/api/cart/add', {
           method: 'POST',
