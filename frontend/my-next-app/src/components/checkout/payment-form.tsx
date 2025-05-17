@@ -5,11 +5,15 @@ import type React from "react"
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { QrCode, Truck } from "lucide-react"
-import type { CustomerInfo, PaymentMethod } from "./checkout"
+import type { PaymentMethod } from "./checkout"
+import { CustomerInfo } from "@/types/customer-info"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Input } from "@/components/ui/input"
+import { useCart } from "@/context/CartContext"
+import districts from "../../data dist/quan_huyen.json"
+import provinces from "../../data dist/tinh_tp.json";
 
 interface PaymentFormProps {
   customerInfo: CustomerInfo
@@ -21,6 +25,17 @@ interface PaymentFormProps {
 export const PaymentForm = ({ customerInfo, paymentMethod, setPaymentMethod, onSubmit }: PaymentFormProps) => {
   const [isProcessing, setIsProcessing] = useState(false)
   const [promoCode, setPromoCode] = useState("")
+  const { cart } = useCart()
+
+  const totalPrice = cart.reduce((total, item) => total + item.product.price * item.quantity, 0)
+  const shippingFee = 0 // Có thể thêm tính phí vận chuyển sau
+
+  const provinceName =
+    provinces[customerInfo.province as keyof typeof provinces]?.name_with_type || "";
+
+  const districtName =
+    districts[customerInfo.district as keyof typeof districts]?.name_with_type || "";
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -125,7 +140,7 @@ export const PaymentForm = ({ customerInfo, paymentMethod, setPaymentMethod, onS
                   Đang xử lý...
                 </>
               ) : (
-                "Thanh toán"
+                "Đặt hàng"
               )}
             </Button>
           </motion.div>
@@ -135,35 +150,44 @@ export const PaymentForm = ({ customerInfo, paymentMethod, setPaymentMethod, onS
       <div>
         <div className="bg-pink-50 rounded-lg shadow-md p-6">
           <h3 className="font-semibold text-lg mb-4">Thông tin đơn hàng</h3>
-          <div className="flex items-center gap-4 border-b pb-4">
-            <div className="w-20 h-20 bg-white rounded-md overflow-hidden">
-              <img src="/placeholder.svg?height=80&width=80" alt="Xe đạp ABC" className="w-full h-full object-cover" />
-            </div>
-            <div>
-              <h4 className="font-medium">Xe đạp ABC</h4>
-              <p className="text-sm text-gray-500">Màu: Đen</p>
-              <p className="text-sm text-gray-500">Số lượng: 1</p>
-              <p className="font-semibold text-pink-600 mt-1">15.000.000₫</p>
-            </div>
+          <div className="max-h-[300px] overflow-y-auto pr-2 space-y-4">
+            {cart.map((item) => (
+              <div key={item.id} className="flex items-center gap-4 border-b pb-4">
+                <div className="w-20 h-20 bg-white rounded-md overflow-hidden">
+                  <img
+                    src={item.product.imageUrls[0] || "/placeholder.svg"}
+                    alt={item.product.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div>
+                  <h4 className="font-medium">{item.product.name}</h4>
+                  <p className="text-sm text-gray-500">Số lượng: {item.quantity}</p>
+                  <p className="font-semibold text-pink-600 mt-1">
+                    {(item.product.price * item.quantity).toLocaleString('vi-VN')}₫
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
 
           <div className="mt-4 space-y-2">
             <div className="flex justify-between">
               <span className="text-gray-600">Tạm tính:</span>
-              <span>15.000.000₫</span>
+              <span>{totalPrice.toLocaleString('vi-VN')}₫</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Phí vận chuyển:</span>
-              <span>0₫</span>
+              <span>{shippingFee.toLocaleString('vi-VN')}₫</span>
             </div>
             <div className="flex justify-between font-semibold text-lg pt-2 border-t mt-2">
               <span>Tổng cộng:</span>
-              <span className="text-pink-600">15.000.000₫</span>
+              <span className="text-pink-600">{(totalPrice + shippingFee).toLocaleString('vi-VN')}₫</span>
             </div>
           </div>
 
           <div className="mt-6 border-t pt-4">
-            <h4 className="font-medium mb-3">Thông tin khách hàng</h4>
+            <h4 className="font-semibold mb-3">Thông tin khách hàng</h4>
             <div className="space-y-2 text-sm">
               <p>
                 <span className="text-gray-600">Họ tên:</span>{" "}
@@ -174,12 +198,13 @@ export const PaymentForm = ({ customerInfo, paymentMethod, setPaymentMethod, onS
                 <span className="font-medium">{customerInfo.phone}</span>
               </p>
               <p>
-                <span className="text-gray-600">Email:</span> <span className="font-medium">{customerInfo.email}</span>
+                <span className="text-gray-600">Email:</span>{" "}
+                <span className="font-medium">{customerInfo.email}</span>
               </p>
               <p>
                 <span className="text-gray-600">Địa chỉ:</span>{" "}
                 <span className="font-medium">
-                  {customerInfo.address}, {customerInfo.district}, {customerInfo.province}
+                  {customerInfo.address}, {districtName}, {provinceName}
                 </span>
               </p>
               {customerInfo.note && (

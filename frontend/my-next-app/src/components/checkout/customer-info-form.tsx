@@ -4,13 +4,15 @@ import type React from "react"
 
 import { useState } from "react"
 import { motion } from "framer-motion"
-import type { CustomerInfo } from "./checkout"
+import { CustomerInfo } from "@/types/customer-info"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { OrderSummary } from "./order-sumary"
+import districts from "../../data dist/quan_huyen.json"
+import provinces from "../../data dist/tinh_tp.json";
+import { useCart } from "@/context/CartContext"
 
 interface CustomerInfoFormProps {
   initialValues: CustomerInfo
@@ -20,24 +22,34 @@ interface CustomerInfoFormProps {
 export const CustomerInfoForm = ({ initialValues, onSubmit }: CustomerInfoFormProps) => {
   const [formData, setFormData] = useState<CustomerInfo>(initialValues)
   const [errors, setErrors] = useState<Partial<Record<keyof CustomerInfo, string>>>({})
+  const { cart } = useCart()
+
+  const subtotal = cart.reduce((total, item) => total + (item.product.price * item.quantity), 0)
+  const shippingFee = 0
+  const total = subtotal + shippingFee
 
   const handleChange = (field: keyof CustomerInfo, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
 
-    // Clear error when user types
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }))
     }
   }
+  const provincesArray = Object.values(provinces);
+  const districtArray = Object.values(districts);
+
+  const districtOptions = districtArray.filter(
+    (d) => d.parent_code === formData.province
+  );
 
   const validateForm = () => {
     const newErrors: Partial<Record<keyof CustomerInfo, string>> = {}
 
     if (!formData.phone) newErrors.phone = "Vui lòng nhập số điện thoại"
-    else if (!/^[0-9]{10}$/.test(formData.phone)) newErrors.phone = "Số điện thoại không hợp lệ"
+    else if (!/^[0-9]{10}$/.test(String(formData.phone))) newErrors.phone = "Số điện thoại không hợp lệ"
 
     if (!formData.email) newErrors.email = "Vui lòng nhập email"
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = "Email không hợp lệ"
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(formData.email))) newErrors.email = "Email không hợp lệ"
 
     if (!formData.fullName) newErrors.fullName = "Vui lòng nhập họ tên"
     if (!formData.province) newErrors.province = "Vui lòng chọn tỉnh/thành phố"
@@ -47,6 +59,7 @@ export const CustomerInfoForm = ({ initialValues, onSubmit }: CustomerInfoFormPr
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -59,15 +72,13 @@ export const CustomerInfoForm = ({ initialValues, onSubmit }: CustomerInfoFormPr
   return (
     <div className="grid md:grid-cols-2 gap-8">
       <div>
-        <OrderSummary />
-
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div className="space-y-2">
             <Label htmlFor="phone">Điện thoại</Label>
             <Input
               id="phone"
               placeholder="Nhập số điện thoại"
-              value={formData.phone}
+              value={String(formData.phone)}
               onChange={(e) => handleChange("phone", e.target.value)}
               className={errors.phone ? "border-red-500" : ""}
             />
@@ -80,7 +91,7 @@ export const CustomerInfoForm = ({ initialValues, onSubmit }: CustomerInfoFormPr
               id="email"
               type="email"
               placeholder="Nhập email"
-              value={formData.email}
+              value={String(formData.email)}
               onChange={(e) => handleChange("email", e.target.value)}
               className={errors.email ? "border-red-500" : ""}
             />
@@ -92,7 +103,7 @@ export const CustomerInfoForm = ({ initialValues, onSubmit }: CustomerInfoFormPr
             <Input
               id="fullName"
               placeholder="Nhập họ và tên"
-              value={formData.fullName}
+              value={String(formData.fullName)}
               onChange={(e) => handleChange("fullName", e.target.value)}
               className={errors.fullName ? "border-red-500" : ""}
             />
@@ -100,31 +111,44 @@ export const CustomerInfoForm = ({ initialValues, onSubmit }: CustomerInfoFormPr
           </div>
 
           <div className="grid grid-cols-2 gap-4">
+            {/* Chọn Tỉnh/Thành phố */}
             <div className="space-y-2">
               <Label htmlFor="province">Tỉnh/Thành phố</Label>
-              <Select value={formData.province} onValueChange={(value) => handleChange("province", value)}>
+              <Select
+                value={String(formData.province)}
+                onValueChange={(value) => handleChange("province", value)}
+              >
                 <SelectTrigger id="province" className={errors.province ? "border-red-500" : ""}>
                   <SelectValue placeholder="Chọn tỉnh/thành phố" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="hanoi">Hà Nội</SelectItem>
-                  <SelectItem value="hcm">TP. Hồ Chí Minh</SelectItem>
-                  <SelectItem value="danang">Đà Nẵng</SelectItem>
+                  {provincesArray.map((province) => (
+                    <SelectItem key={province.code} value={province.code}>
+                      {province.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               {errors.province && <p className="text-red-500 text-sm">{errors.province}</p>}
             </div>
 
+            {/* Chọn Quận/Huyện */}
             <div className="space-y-2">
               <Label htmlFor="district">Quận/Huyện</Label>
-              <Select value={formData.district} onValueChange={(value) => handleChange("district", value)}>
+              <Select
+                value={String(formData.district)}
+                onValueChange={(value) => handleChange("district", value)}
+                disabled={!formData.province}
+              >
                 <SelectTrigger id="district" className={errors.district ? "border-red-500" : ""}>
                   <SelectValue placeholder="Chọn quận/huyện" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="district1">Quận 1</SelectItem>
-                  <SelectItem value="district2">Quận 2</SelectItem>
-                  <SelectItem value="district3">Quận 3</SelectItem>
+                  {districtOptions.map((district) => (
+                    <SelectItem key={district.code} value={district.code}>
+                      {district.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               {errors.district && <p className="text-red-500 text-sm">{errors.district}</p>}
@@ -136,7 +160,7 @@ export const CustomerInfoForm = ({ initialValues, onSubmit }: CustomerInfoFormPr
             <Input
               id="address"
               placeholder="Nhập địa chỉ chi tiết"
-              value={formData.address}
+              value={String(formData.address)}
               onChange={(e) => handleChange("address", e.target.value)}
               className={errors.address ? "border-red-500" : ""}
             />
@@ -148,7 +172,7 @@ export const CustomerInfoForm = ({ initialValues, onSubmit }: CustomerInfoFormPr
             <Textarea
               id="note"
               placeholder="Ghi chú thêm (nếu có)"
-              value={formData.note}
+              value={String(formData.note)}
               onChange={(e) => handleChange("note", e.target.value)}
               rows={3}
             />
@@ -165,30 +189,39 @@ export const CustomerInfoForm = ({ initialValues, onSubmit }: CustomerInfoFormPr
       <div className="hidden md:block">
         <div className="bg-pink-50 rounded-lg shadow-md p-6">
           <h3 className="font-semibold text-lg mb-4">Thông tin đơn hàng</h3>
-          <div className="flex items-center gap-4 border-b pb-4">
-            <div className="w-20 h-20 bg-white rounded-md overflow-hidden">
-              <img src="/placeholder.svg?height=80&width=80" alt="Xe đạp ABC" className="w-full h-full object-cover" />
-            </div>
-            <div>
-              <h4 className="font-semibold">Xe đạp ABC</h4>
-              <p className="text-sm text-gray-500">Màu: Đen</p>
-              <p className="text-sm text-gray-500">Số lượng: 1</p>
-              <p className="font-semibold text-pink-600 mt-1">15.000.000₫</p>
-            </div>
+          <div className="max-h-[300px] overflow-y-auto pr-2 space-y-4">
+            {cart.map((item) => (
+              <div key={item.id} className="flex items-center gap-4 border-b pb-4">
+                <div className="w-20 h-20 bg-white rounded-md overflow-hidden flex-shrink-0">
+                  <img
+                    src={item.product.imageUrls[0] || "/placeholder.svg?height=80&width=80"}
+                    alt={item.product.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex-grow">
+                  <h4 className="font-semibold">{item.product.name}</h4>
+                  <p className="text-sm text-gray-500">Số lượng: {item.quantity}</p>
+                  <p className="font-semibold text-pink-600 mt-1">
+                    {(item.product.price * item.quantity).toLocaleString('vi-VN')}₫
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
 
-          <div className="mt-4 space-y-2">
+          <div className="mt-4 space-y-2 sticky bottom-0 bg-pink-50 pt-4">
             <div className="flex justify-between">
               <span className="text-gray-600">Tạm tính:</span>
-              <span>15.000.000₫</span>
+              <span>{subtotal.toLocaleString('vi-VN')}₫</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Phí vận chuyển:</span>
-              <span>0₫</span>
+              <span>{shippingFee.toLocaleString('vi-VN')}₫</span>
             </div>
             <div className="flex justify-between font-semibold text-lg pt-2 border-t mt-2">
               <span>Tổng cộng:</span>
-              <span className="text-pink-600">15.000.000₫</span>
+              <span className="text-pink-600">{total.toLocaleString('vi-VN')}₫</span>
             </div>
           </div>
         </div>

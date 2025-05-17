@@ -83,12 +83,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
       console.warn("Bạn chưa đăng nhập hoặc chưa sẵn sàng thao tác giỏ hàng");
       return;
     }
-  
+
     const isInCartNow = cart.some(item => item.productId === product.id);
-  
+
     if (isInCartNow) {
       await removeFromCart(product.id);
-      await fetchCartFromDB(Number(user.id)); 
+      await fetchCartFromDB(Number(user.id));
     } else {
       try {
         const res = await fetch('http://localhost:8081/api/cart/add', {
@@ -100,16 +100,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
             quantity: 1
           })
         });
-  
+
         if (!res.ok) throw new Error("Lỗi khi thêm vào giỏ hàng");
-  
+
         await fetchCartFromDB(Number(user.id));
       } catch (error) {
         console.error("Lỗi khi toggle sản phẩm vào giỏ hàng:", error);
       }
     }
   };
-  
+
 
   const removeFromCart = async (productId: number) => {
     if (!user) {
@@ -132,7 +132,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       await fetch(`http://localhost:8081/api/cart/delete/${cartItem.id}`, {
         method: 'DELETE'
       });
-      
+
       await fetchCartFromDB(Number(user.id));
     } catch (error) {
       console.error("Failed to remove item from cart:", error);

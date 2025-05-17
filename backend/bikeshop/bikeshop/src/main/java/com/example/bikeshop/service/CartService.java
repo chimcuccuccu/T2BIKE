@@ -8,6 +8,7 @@ import com.example.bikeshop.entity.User;
 import com.example.bikeshop.repository.CartItemRepository;
 import com.example.bikeshop.repository.ProductRepository;
 import com.example.bikeshop.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -60,6 +61,7 @@ public class CartService {
         cartItemRepo.deleteById(cartItemId);
     }
 
+    @Transactional
     public void clearCart(Long userId) {
         cartItemRepo.deleteByUserId(userId);
     }
