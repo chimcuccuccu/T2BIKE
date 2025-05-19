@@ -75,7 +75,7 @@ public class ShopReviewController {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
 
-        if (!user.getRole().equals("admin") && !reviewService.isReviewOwner(id, userId)) {
+        if (!"admin".equals(user.getRole()) && !reviewService.isReviewOwner(id, userId)) {
             return ResponseEntity.status(403).body("Bạn không có quyền chỉnh sửa đánh giá này.");
         }
 
@@ -92,7 +92,7 @@ public class ShopReviewController {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
 
-        if (!user.getRole().equals("admin") && !reviewService.isReviewOwner(id, userId)) {
+        if (!"admin".equals(user.getRole()) && !reviewService.isReviewOwner(id, userId)) {
             return ResponseEntity.status(403).body("Bạn không có quyền xóa đánh giá này.");
         }
 

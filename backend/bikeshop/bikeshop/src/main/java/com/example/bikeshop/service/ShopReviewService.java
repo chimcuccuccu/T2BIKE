@@ -51,7 +51,7 @@ public class ShopReviewService {
         ShopReview review = reviewRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Review not found"));
 
-        if (!review.getUser().getId().equals(user.getId())) {
+        if (!review.getUser().getId().equals(user.getId()) && !user.getRole().equalsIgnoreCase("admin")) {
             throw new RuntimeException("Not allowed");
         }
 
@@ -65,7 +65,7 @@ public class ShopReviewService {
         ShopReview review = reviewRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Review not found"));
 
-        if (!review.getUser().getId().equals(user.getId())) {
+        if (!review.getUser().getId().equals(user.getId()) && !user.getRole().equalsIgnoreCase("admin")) {
             throw new RuntimeException("Not allowed");
         }
 

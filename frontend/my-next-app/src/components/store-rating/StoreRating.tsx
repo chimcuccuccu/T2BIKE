@@ -46,11 +46,14 @@ export default function StoreRating() {
     useEffect(() => {
         const fetchUserInfo = async () => {
         try {
-            const response = await fetch('/api/auth/current-user')
+            const response = await fetch('http://localhost:8081/api/users/me', {
+            credentials: 'include',
+            });
             if (response.ok) {
             const userData = await response.json()
             setCurrentUserId(userData.id)
             setIsAdmin(userData.role === 'admin')
+            console.log('Current User:', userData)
             }
         } catch (error) {
             console.error('Error fetching user info:', error)
@@ -65,8 +68,8 @@ export default function StoreRating() {
             const response = await fetch(`http://localhost:8081/api/shop-reviews?page=${currentPage - 1}&size=${reviewsPerPage}`)
             if (response.ok) {
             const data = await response.json()
-            console.log('Full API response:', data) // 👈 log toàn bộ response
-            console.log('Review content:', data.content) // 👈 log mảng review
+            console.log('Full API response:', data) 
+            console.log('Review content:', data.content) 
             setReviews(data.content)
             }
         } catch (error) {
@@ -219,6 +222,7 @@ export default function StoreRating() {
             headers: {
                 'Content-Type': 'application/json',
             },
+            credentials: 'include',
             body: JSON.stringify({
                 rating: editRating,
                 comment: editComment,
@@ -254,6 +258,7 @@ export default function StoreRating() {
         try {
             const response = await fetch(`http://localhost:8081/api/shop-reviews/${reviewToDelete}`, {
             method: 'DELETE',
+            credentials: 'include',
             })
 
             if (response.ok) {
@@ -361,7 +366,7 @@ export default function StoreRating() {
                         />
                       </div>
                       <div className="w-10 text-xs text-gray-500 text-right">
-                        {ratingStats.starCounts[starNum - 1]}
+                        {ratingStats.starCounts[starNum]}
                       </div>
                     </div>
                   ))}
@@ -537,7 +542,7 @@ export default function StoreRating() {
                             <div className="flex gap-2 mt-2">
                             {(currentUserId === review.userId || isAdmin) && (
                                 <>
-                                <Button
+                                {/* <Button
                                     size="sm"
                                     variant="ghost"
                                     className="h-8 px-2 text-gray-500 hover:text-pink-600 hover:bg-pink-50 transition-all duration-300"
@@ -545,7 +550,7 @@ export default function StoreRating() {
                                 >
                                     <Edit className="h-4 w-4 mr-1" />
                                     Chỉnh sửa
-                                </Button>
+                                </Button> */}
                                 <Button
                                     size="sm"
                                     variant="ghost"
