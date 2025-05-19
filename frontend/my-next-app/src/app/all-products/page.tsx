@@ -18,6 +18,7 @@ import { HeaderPage } from "@/components/Header/header-page";
 import { useCart } from "@/context/CartContext";
 import { useToast } from "@/hooks/use-toast";
 import { ProductList } from "@/components/Product-List/product-list";
+import { UserCircle } from "lucide-react";
 
 export default function ProductsPage() {
     const [products, setProducts] = useState<Product[]>([])

@@ -16,6 +16,7 @@ public class ShopReviewResponse {
     private int rating;
     private String reviewerName;
     private LocalDateTime createdAt;
+    private Long userId;
 
     public ShopReviewResponse() {
 
