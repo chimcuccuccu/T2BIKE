@@ -17,5 +17,8 @@ public interface ShopReviewRepository extends JpaRepository<ShopReview, Long> {
     @Query("SELECT AVG(r.rating) FROM ShopReview r")
     Double findAverageRating();
 
+    boolean existsByIdAndUserId(Long id, Long userId);
 
+    @Query("SELECT r.rating AS rating, COUNT(r) AS count FROM ShopReview r GROUP BY r.rating")
+    List<Object[]> findRatingCounts();
 }

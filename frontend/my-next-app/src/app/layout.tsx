@@ -35,8 +35,8 @@ export default function RootLayout({
         <AuthProvider>
           <CartProvider>
             <WishlistProvider>
-              <HeaderPage />
-              <main>{children}</main>
+                <HeaderPage />
+                <main>{children}</main>
             </WishlistProvider>
           </CartProvider>
           <Toaster></Toaster>

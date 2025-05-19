@@ -4,4 +4,5 @@ export interface Review {
   avatar: string
   rating: number
   comment: string
+  timestamp: Date
 }

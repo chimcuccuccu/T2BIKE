@@ -2,6 +2,7 @@ package com.example.bikeshop.controller;
 
 import com.example.bikeshop.dto.ShopReviewRequest;
 import com.example.bikeshop.dto.ShopReviewResponse;
+import com.example.bikeshop.dto.ShopReviewStatsDTO;
 import com.example.bikeshop.entity.User;
 import com.example.bikeshop.repository.UserRepository;
 import com.example.bikeshop.service.ShopReviewService;
@@ -59,7 +60,7 @@ public class ShopReviewController {
     @GetMapping
     public Page<ShopReviewResponse> getAllReviews(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "9") int size
+            @RequestParam(defaultValue = "5") int size
     ) {
         return reviewService.getAllReviews(page, size);
     }
@@ -70,8 +71,13 @@ public class ShopReviewController {
         if (userId == null) {
             return ResponseEntity.status(401).body("Bạn cần đăng nhập để chỉnh sửa đánh giá.");
         }
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+        if (!"admin".equals(user.getRole()) && !reviewService.isReviewOwner(id, userId)) {
+            return ResponseEntity.status(403).body("Bạn không có quyền chỉnh sửa đánh giá này.");
+        }
 
         return ResponseEntity.ok(reviewService.updateReview(id, req, user));
     }
@@ -86,9 +92,17 @@ public class ShopReviewController {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
 
+        if (!"admin".equals(user.getRole()) && !reviewService.isReviewOwner(id, userId)) {
+            return ResponseEntity.status(403).body("Bạn không có quyền xóa đánh giá này.");
+        }
+
         reviewService.deleteReview(id, user);
         return ResponseEntity.ok("Đánh giá đã được xóa thành công.");
     }
 
+    @GetMapping("/stats")
+    public ResponseEntity<ShopReviewStatsDTO> getStats() {
+        return ResponseEntity.ok(reviewService.getReviewStats());
+    }
 }
 
