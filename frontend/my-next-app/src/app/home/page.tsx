@@ -9,9 +9,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { HeaderPage
+import { HeaderPage } from '@/components/Header/header-page';
+import StoreRating from '@/components/store-rating/StoreRating';
 
- } from '@/components/Header/header-page';
 export default function Home() {
     const [products, setProducts] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState('');
@@ -151,18 +151,21 @@ export default function Home() {
                     </div>
             </section>
 
+            {/* Rating */}
+            <StoreRating></StoreRating>
+            
             {/* Footer */}
             <footer className="bg-white mt-16 border-t max-w-screen-2xl mx-auto ">
                 <div className="border-t border-pink-100 bg-[#FFE4EF]">
                     <div className="container mx-auto px-4 py-8">
                         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                            <div className="flex-1 w-full max-w-xl">
+                            {/* <div className="flex-1 w-full max-w-xl">
                                 <div className="flex gap-2">
                                     <Input type="email" placeholder="Nhập Email Để Tư Vấn" className="bg-white" />
                                     <Button className="bg-pink-500 hover:bg-pink-600 text-white min-w-[120px]">SUBSCRIBE</Button>
                                 </div>
-                            </div>
-                            <p className="text-gray-600 text-sm">Đăng ký để nhận được thông báo mới nhất từ T2BIKE</p>
+                            </div> */}
+                            {/* <p className="text-gray-600 text-sm">Đăng ký để nhận được thông báo mới nhất từ T2BIKE</p> */}
                         </div>
                     </div>
                 </div>
