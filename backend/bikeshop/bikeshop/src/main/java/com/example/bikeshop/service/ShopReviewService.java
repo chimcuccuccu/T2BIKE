@@ -68,7 +68,6 @@ public class ShopReviewService {
         if (!review.getUser().getId().equals(user.getId()) && !user.getRole().equalsIgnoreCase("admin")) {
             throw new RuntimeException("Not allowed");
         }
-
         reviewRepository.delete(review);
     }
 

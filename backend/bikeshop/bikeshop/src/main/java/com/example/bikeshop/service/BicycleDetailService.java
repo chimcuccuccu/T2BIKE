@@ -2,6 +2,7 @@ package com.example.bikeshop.service;
 
 import com.example.bikeshop.dto.BicycleDetailDTO;
 import com.example.bikeshop.dto.BicycleDetailRequest;
+import com.example.bikeshop.dto.DetailDTO;
 import com.example.bikeshop.entity.BicycleDetail;
 import com.example.bikeshop.entity.Product;
 import com.example.bikeshop.repository.BicycleDetailRepository;
@@ -56,8 +57,6 @@ public class BicycleDetailService {
         return new PageImpl<>(bicycleDetailDTOList, pageable, detailsPage.getTotalElements());
     }
 
-
-
     // Lấy tất cả detail theo productId
     public List<BicycleDetailDTO> getDetailsByProductId(Long productId) {
         List<BicycleDetail> details = repository.findByProductId(productId);
@@ -76,26 +75,23 @@ public class BicycleDetailService {
                 .collect(Collectors.toList());
     }
 
-
     // Thêm detail mới
     public BicycleDetailDTO addDetail(BicycleDetailRequest dto) {
-        BicycleDetail detail = new BicycleDetail();
-        detail.setAttributeName(dto.getAttributes().get(0).getAttributeName());
-        detail.setAttributeValue(dto.getAttributes().get(0).getAttributeValue());
-
-        // Lưu BicycleDetail
-        BicycleDetail saved = repository.save(detail);
-
-        // Lấy Product từ productId
         Product product = productRepository.findById(dto.getProductId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm"));
 
-        // Nhóm BicycleDetail theo productId
-        Map<Long, List<BicycleDetail>> productDetailMap = new HashMap<>();
-        productDetailMap.put(product.getId(), List.of(saved));
+        List<BicycleDetail> savedDetails = new ArrayList<>();
 
-        // Tạo BicycleDetailDTO cho sản phẩm mới và chi tiết vừa thêm
-        return new BicycleDetailDTO(product, productDetailMap.get(product.getId()));
+        for (DetailDTO attr : dto.getAttributes()) {
+            BicycleDetail detail = new BicycleDetail();
+            detail.setProduct(product);  // liên kết với product
+            detail.setAttributeName(attr.getAttributeName());
+            detail.setAttributeValue(attr.getAttributeValue());
+            BicycleDetail saved = repository.save(detail);
+            savedDetails.add(saved);
+        }
+
+        return new BicycleDetailDTO(product, savedDetails);
     }
 
 

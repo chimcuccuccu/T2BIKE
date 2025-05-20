@@ -16,17 +16,17 @@ export default function ProductSpecs() {
 
     useEffect(() => {
         if (id) {
-        axios.get(`http://localhost:8081/api/product-attributes/attributes/${id}`) // Gửi request đến BE
+        axios.get(`http://localhost:8081/api/product-attributes/details/${id}`) // Gửi request đến BE
             .then(response => {
             console.log("Dữ liệu từ API:", response.data);
-            setProduct(response.data); // Lưu dữ liệu sản phẩm
-            console.log("Danh sách attributes:", response.data.attributes);
+            setProduct(response.data[0]); 
+            console.log("Danh sách attributes:", response.data[0].attributes);
             })
             .catch(error => {
             console.error("❌ Lỗi khi lấy dữ liệu sản phẩm:", error.response?.data || error.message);
             });
         }
-    }, [id]); // Chạy lại khi ID thay đổi
+    }, [id]); 
 
     const containerRef = useRef(null)
     const isInView = useInView(containerRef, { once: true, amount: 0.2 })
