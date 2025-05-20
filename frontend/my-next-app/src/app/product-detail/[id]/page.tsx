@@ -10,7 +10,7 @@ import {
     Star, Truck, RefreshCw,
     Search, ShoppingCart, Home,
     ChevronRight, Facebook, ChevronUp, ZoomIn, ShieldCheck,
-    ArrowLeft, ArrowRight, Share2
+    ArrowLeft, ArrowRight, Share2, Send, User, Store, Smile, Trash2, X
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -18,7 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Product } from "@/types/product"
+import { Product, ProductReview, ProductReviewResponse } from "@/types/product"
 import { useParams } from "next/navigation"
 import axios from "axios"
 import FormatPrice from "@/components/ui/FormatPrice"
@@ -27,6 +27,23 @@ import ImageLightbox from "@/components/ImageLightBox"
 import ProductSpecs from "@/components/ProductSpecs"
 import QuestionsAnswers from "@/components/QuestionAnswer"
 import { HeaderPage } from "@/components/Header/header-page"
+import { Textarea } from "@/components/ui/textarea"
+
+// Add type definition for Question
+type Question = {
+    id: string;
+    userId: number;
+    user: string;
+    question: string;
+    date: string;
+    replies: {
+        id: string;
+        admin: boolean;
+        adminName: string;
+        content: string;
+        date: string;
+    }[];
+};
 
 export default function ProductDetail() {
     const { id } = useParams()
@@ -39,11 +56,204 @@ export default function ProductDetail() {
     const [isWishlisted, setIsWishlisted] = useState(false)
     const [activeTab, setActiveTab] = useState("info")
     const [currentImage, setCurrentImage] = useState(0)
+    const [reviews, setReviews] = useState<ProductReview[]>([]);
+    const [totalReviewPages, setTotalReviewPages] = useState(1);
+    const [currentReviewPage, setCurrentReviewPage] = useState(0);
+    const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [userId, setUserId] = useState<number | null>(null);
+    const [isEditing, setIsEditing] = useState<string | null>(null);
+    const [editContent, setEditContent] = useState("");
+    const [notification, setNotification] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [reviewToDelete, setReviewToDelete] = useState<string | null>(null);
+    const modalRef = useRef<HTMLDivElement>(null);
 
     const increaseQuantity = () => setQuantity((prev) => prev + 1)
     const decreaseQuantity = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1))
 
+    const [currentQAPage, setCurrentQAPage] = useState(1)
+    const [totalQAPages, setTotalQAPages] = useState(1)
+    const questionsPerPage = 4
 
+    const formatDate = (date: Date) => {
+        const now = new Date()
+        const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+
+        if (diffInSeconds < 60) {
+            return "Vừa xong"
+        } else if (diffInSeconds < 3600) {
+            return `${Math.floor(diffInSeconds / 60)} phút trước`
+        } else if (diffInSeconds < 86400) {
+            return `${Math.floor(diffInSeconds / 3600)} giờ trước`
+        } else if (diffInSeconds < 604800) {
+            return `${Math.floor(diffInSeconds / 86400)} ngày trước`
+        } else {
+            const day = date.getDate().toString().padStart(2, "0")
+            const month = (date.getMonth() + 1).toString().padStart(2, "0")
+            const year = date.getFullYear()
+            const hours = date.getHours().toString().padStart(2, "0")
+            const minutes = date.getMinutes().toString().padStart(2, "0")
+
+            return `${day}/${month}/${year} ${hours}:${minutes}`
+        }
+    }
+
+    // Animation variants
+    const tabContentVariants = {
+        hidden: { opacity: 0, y: 30 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: {
+                type: "spring",
+                stiffness: 300,
+                damping: 24,
+                duration: 0.4,
+            },
+        },
+        exit: {
+            opacity: 0,
+            y: -20,
+            transition: {
+                type: "spring",
+                stiffness: 300,
+                damping: 24,
+                duration: 0.3,
+            },
+        },
+    }
+
+    const reviewItemVariants = {
+        hidden: { opacity: 0, x: -30, scale: 0.95 },
+        visible: (i: number) => ({
+            opacity: 1,
+            x: 0,
+            scale: 1,
+            transition: {
+                type: "spring",
+                stiffness: 300,
+                damping: 24,
+                delay: i * 0.08,
+                duration: 0.4,
+            },
+        }),
+        exit: (i: number) => ({
+            opacity: 0,
+            x: 30,
+            scale: 0.95,
+            transition: {
+                type: "spring",
+                stiffness: 300,
+                damping: 24,
+                delay: i * 0.04,
+                duration: 0.3,
+            },
+        }),
+    }
+
+    const paginationVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: {
+                type: "spring",
+                stiffness: 300,
+                damping: 24,
+                delay: 0.2,
+                staggerChildren: 0.05,
+                delayChildren: 0.3,
+            },
+        },
+    }
+
+    const paginationItemVariants = {
+        hidden: { opacity: 0, y: 10, scale: 0.9 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            transition: {
+                type: "spring",
+                stiffness: 500,
+                damping: 24,
+            },
+        },
+    }
+
+    const commentFormVariants = {
+        hidden: { opacity: 0, height: 0, marginTop: 0 },
+        visible: {
+            opacity: 1,
+            height: "auto",
+            marginTop: 16,
+            transition: {
+                type: "spring",
+                stiffness: 300,
+                damping: 24,
+                duration: 0.3,
+            },
+        },
+        exit: {
+            opacity: 0,
+            height: 0,
+            marginTop: 0,
+            transition: {
+                type: "spring",
+                stiffness: 300,
+                damping: 24,
+                duration: 0.2,
+            },
+        },
+    }
+
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.1,
+            },
+        },
+    }
+
+    const itemVariants = {
+        hidden: { y: 20, opacity: 0 },
+        visible: {
+            y: 0,
+            opacity: 1,
+            transition: {
+                type: "spring",
+                stiffness: 300,
+                damping: 24,
+            },
+        },
+    }
+
+    const replyFormVariants = {
+        hidden: { opacity: 0, height: 0, marginTop: 0 },
+        visible: {
+            opacity: 1,
+            height: "auto",
+            marginTop: 12,
+            transition: {
+                type: "spring",
+                stiffness: 300,
+                damping: 24,
+            },
+        },
+        exit: {
+            opacity: 0,
+            height: 0,
+            marginTop: 0,
+            transition: {
+                type: "spring",
+                stiffness: 300,
+                damping: 24,
+            },
+        },
+    }
     const toggleWishlist = () => {
         setIsWishlisted((prev) => !prev)
     }
@@ -88,6 +298,235 @@ export default function ProductDetail() {
         }
     }, [id]);
 
+    useEffect(() => {
+        const fetchReviews = async () => {
+            if (!id) return;
+            setIsLoadingReviews(true);
+            try {
+                const response = await axios.get<ProductReview[]>(
+                    `http://localhost:8081/api/product-reviews/product/${id}`
+                );
+                setReviews(response.data);
+                setTotalReviewPages(Math.ceil(response.data.length / 9));
+            } catch (error) {
+                console.error('Error fetching reviews:', error);
+            } finally {
+                setIsLoadingReviews(false);
+            }
+        };
+
+        fetchReviews();
+    }, [id]);
+
+    // Check if user is logged in
+    useEffect(() => {
+        const checkLoginStatus = async () => {
+            try {
+                const response = await axios.get('http://localhost:8081/api/users/me', { withCredentials: true });
+                if (response.data && response.data.id) {
+                    setIsLoggedIn(true);
+                    setUserId(response.data.id);
+                    console.log("User ID:", response.data.id);
+                }
+            } catch (error) {
+                console.error('Error checking login status:', error);
+                setIsLoggedIn(false);
+                setUserId(null);
+            }
+        };
+        checkLoginStatus();
+    }, []);
+
+    // Map reviews to questions format
+    const mappedQuestions = reviews.map(review => ({
+        id: review.id.toString(),
+        userId: review.userId,
+        user: review.username,
+        question: review.comment,
+        date: review.createdAt,
+        replies: review.answer ? [{
+            id: `${review.id}-1`,
+            admin: true,
+            adminName: "T2BIKE",
+            content: review.answer,
+            date: review.answeredAt || "",
+        }] : [],
+    }));
+
+    // Update state definition
+    const [questions, setQuestions] = useState<Question[]>(mappedQuestions)
+    const [newQuestion, setNewQuestion] = useState("")
+    const [replyingTo, setReplyingTo] = useState<string | null>(null)
+    const [replyContent, setReplyContent] = useState("")
+    const [isAdmin, setIsAdmin] = useState(false) // Toggle this based on user role
+    const questionInputRef = useRef<HTMLTextAreaElement>(null)
+    const replyInputRef = useRef<HTMLTextAreaElement>(null)
+
+    // Update getCurrentPageQuestions function with proper typing
+    const getCurrentPageQuestions = (): Question[] => {
+        const startIndex = (currentQAPage - 1) * questionsPerPage;
+        const endIndex = startIndex + questionsPerPage;
+        return questions.slice(startIndex, endIndex);
+    };
+
+    // Update the useEffect for questions
+    useEffect(() => {
+        // Sort questions by date (newest first)
+        const sortedQuestions = [...mappedQuestions].sort((a, b) =>
+            new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+        setQuestions(sortedQuestions);
+        setTotalQAPages(Math.ceil(sortedQuestions.length / questionsPerPage));
+    }, [reviews, totalReviewPages]);
+
+    const handleSubmitQuestion = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!newQuestion.trim()) return;
+
+        if (!isLoggedIn) {
+            setNotification({ type: 'error', message: 'Vui lòng đăng nhập để đặt câu hỏi' });
+            return;
+        }
+
+        try {
+            const response = await axios.post(
+                'http://localhost:8081/api/product-reviews',
+                {
+                    productId: id,
+                    comment: newQuestion
+                },
+                { withCredentials: true }
+            );
+
+            if (response.status === 200) {
+                // Refresh reviews after adding new one
+                const reviewsResponse = await axios.get<ProductReview[]>(
+                    `http://localhost:8081/api/product-reviews/product/${id}`
+                );
+                setReviews(reviewsResponse.data);
+                setNewQuestion("");
+                setNotification({ type: 'success', message: 'Đã thêm câu hỏi thành công!' });
+            }
+        } catch (error) {
+            console.error('Error adding review:', error);
+            if (axios.isAxiosError(error)) {
+                if (error.response?.status === 401) {
+                    setNotification({ type: 'error', message: 'Vui lòng đăng nhập để đặt câu hỏi' });
+                } else {
+                    setNotification({ type: 'error', message: error.response?.data?.message || 'Có lỗi xảy ra khi thêm câu hỏi' });
+                }
+            } else {
+                setNotification({ type: 'error', message: 'Có lỗi xảy ra khi thêm câu hỏi' });
+            }
+        }
+    };
+
+    const handleSubmitReply = (questionId: string) => {
+        if (!replyContent.trim()) return
+
+        const updatedQuestions = questions.map((q) => {
+            if (q.id === questionId) {
+                return {
+                    ...q,
+                    replies: [
+                        ...q.replies,
+                        {
+                            id: `${questionId}-${q.replies.length + 1}`,
+                            admin: true,
+                            adminName: "T2BIKE", // Use your actual admin/store name
+                            content: replyContent,
+                            date: new Date().toISOString(),
+                        },
+                    ],
+                }
+            }
+            return q
+        })
+
+        setQuestions(updatedQuestions)
+        setReplyContent("")
+        setReplyingTo(null)
+    }
+
+    // Change Q&A page
+    const goToNextQAPage = () => {
+        if (currentQAPage < totalQAPages) {
+            setCurrentQAPage(prev => prev + 1);
+            setCurrentReviewPage(prev => prev + 1);
+        }
+    }
+
+    const goToPrevQAPage = () => {
+        if (currentQAPage > 1) {
+            setCurrentQAPage(prev => prev - 1);
+            setCurrentReviewPage(prev => prev - 1);
+        }
+    }
+
+    const handleEditReview = async (reviewId: string) => {
+        if (!editContent.trim()) return;
+
+        try {
+            await axios.put(
+                `http://localhost:8081/api/product-reviews/${reviewId}`,
+                {
+                    comment: editContent
+                },
+                { withCredentials: true }
+            );
+
+            // Refresh reviews after editing
+            const reviewsResponse = await axios.get<ProductReview[]>(
+                `http://localhost:8081/api/product-reviews/product/${id}`
+            );
+            setReviews(reviewsResponse.data);
+            setIsEditing(null);
+            setEditContent("");
+        } catch (error) {
+            console.error('Error editing review:', error);
+            alert("Có lỗi xảy ra khi chỉnh sửa câu hỏi");
+        }
+    };
+
+    const handleDeleteReview = async (reviewId: string) => {
+        setReviewToDelete(reviewId);
+        setDeleteConfirmOpen(true);
+    };
+
+    const handleDelete = async () => {
+        if (!reviewToDelete) return;
+
+        try {
+            await axios.delete(
+                `http://localhost:8081/api/product-reviews/${reviewToDelete}`,
+                { withCredentials: true }
+            );
+
+            // Refresh reviews after deleting
+            const reviewsResponse = await axios.get<ProductReview[]>(
+                `http://localhost:8081/api/product-reviews/product/${id}`
+            );
+            setReviews(reviewsResponse.data);
+            setNotification({ type: 'success', message: 'Đã xóa câu hỏi thành công!' });
+        } catch (error) {
+            console.error('Error deleting review:', error);
+            setNotification({ type: 'error', message: 'Có lỗi xảy ra khi xóa câu hỏi' });
+        } finally {
+            setDeleteConfirmOpen(false);
+            setReviewToDelete(null);
+        }
+    };
+
+    useEffect(() => {
+        if (notification) {
+            const timer = setTimeout(() => {
+                setNotification(null);
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [notification]);
+
     if (!product) return (
         <div className="flex items-center justify-center h-screen">
             <Image
@@ -101,21 +540,94 @@ export default function ProductDetail() {
                 Đang tải, bạn chờ xíu nha <span className="dot1">.</span><span className="dot2">.</span><span className="dot3">.</span>
             </p>
             <style jsx>{`
-                @keyframes blink {
-                0% { opacity: 1; }
-                33% { opacity: 0; }
-                66% { opacity: 1; }
-                100% { opacity: 1; }
-                }
-                .dot1 { animation: blink 1.5s infinite; }
-                .dot2 { animation: blink 1.5s infinite 0.2s; }
-                .dot3 { animation: blink 1.5s infinite 0.4s; }
-            `}</style>
+            @keyframes blink {
+            0% { opacity: 1; }
+            33% { opacity: 0; }
+            66% { opacity: 1; }
+            100% { opacity: 1; }
+            }
+            .dot1 { animation: blink 1.5s infinite; }
+            .dot2 { animation: blink 1.5s infinite 0.2s; }
+            .dot3 { animation: blink 1.5s infinite 0.4s; }
+        `}</style>
         </div>
     );
 
     return (
         <div className="min-h-screen bg-pink-50">
+            <AnimatePresence>
+                {notification && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -100 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -100 }}
+                        className={`fixed top-4 left-[650px] transform -translate-x-1/2 z-50 px-6 py-3 rounded-lg shadow-lg ${notification.type === 'success' ? 'bg-pink-400' : 'bg-red-500'
+                            } text-white`}
+
+                    >
+                        {notification.message}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+                {deleteConfirmOpen && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+                            onClick={() => setDeleteConfirmOpen(false)}
+                        />
+
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            transition={{ duration: 0.2, ease: "easeOut" }}
+                            className="fixed inset-0 z-50 flex items-center justify-center"
+                        >
+                            <div ref={modalRef}
+                                className="bg-white rounded-xl shadow-2xl border border-gray-100 p-6 mx-4 w-full max-w-md">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h3 className="text-lg font-semibold text-gray-800">Xác nhận xóa</h3>
+                                    <button
+                                        onClick={() => setDeleteConfirmOpen(false)}
+                                        className="text-gray-400 hover:text-gray-600 transition-colors"
+                                    >
+                                        <X className="h-5 w-5" />
+                                    </button>
+                                </div>
+
+                                <div className="py-2">
+                                    <p className="text-gray-600">
+                                        Bạn có chắc chắn muốn xóa đánh giá này không? Hành động này không thể hoàn tác.
+                                    </p>
+                                </div>
+
+                                <div className="flex justify-end gap-2 mt-6">
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => setDeleteConfirmOpen(false)}
+                                        className="border-pink-200 text-gray-600 hover:bg-pink-50 transition-all duration-300"
+                                    >
+                                        Hủy
+                                    </Button>
+                                    <Button
+                                        onClick={handleDelete}
+                                        className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 transition-all duration-300 shadow-md hover:shadow-lg"
+                                    >
+                                        Xóa
+                                    </Button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
+
             <motion.div
                 className="mb-6"
                 initial={{ opacity: 0, y: 20 }}
@@ -250,7 +762,7 @@ export default function ProductDetail() {
                                 <Separator className="my-2" />
 
                                 {/* Color selection */}
-                                
+
                                 <h3 className="font-semibold mb-2">Màu</h3>
                                 <div className="flex gap-3">
                                     {product.color.map((color) => (
@@ -268,7 +780,7 @@ export default function ProductDetail() {
                                         </motion.div>
                                     ))}
                                 </div>
-                                
+
 
                                 {/* Quantity */}
                                 <div className="mb-6 mt-5">
@@ -306,7 +818,7 @@ export default function ProductDetail() {
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3 mb-6">
-                                    
+
                                     <Button
                                         variant="secondary"
                                         className="h-12 text-base font-medium flex items-center justify-center gap-2 bg-pink-100 hover:bg-pink-200 text-pink-700"
@@ -342,9 +854,9 @@ export default function ProductDetail() {
                                 </div>
                             </div>
                         </div>
-                    
+
                     </div>
-                                        
+
                     {/* Info */}
                     <div className="mt-8 bg-white rounded-xl shadow-sm overflow-hidden">
                         <Tabs defaultValue="description">
@@ -365,7 +877,7 @@ export default function ProductDetail() {
                                     value="reviews"
                                     className="py-4 px-6 data-[state=active]:border-b-2 data-[state=active]:border-pink-500 rounded-none"
                                 >
-                                    Đánh giá (36)
+                                    Hỏi và đáp
                                 </TabsTrigger>
                             </TabsList>
                             <TabsContent value="description" className="p-6">
@@ -373,60 +885,294 @@ export default function ProductDetail() {
                                     {product.description}
                                 </div>
                             </TabsContent>
+
                             <TabsContent value="specs" className="p-6">
                                 <ProductSpecs></ProductSpecs>
                             </TabsContent>
+
                             <TabsContent value="reviews" className="p-6">
-                                <div className="flex items-center justify-between mb-6">
-                                    <div>
-                                        <h3 className="font-medium text-lg">Đánh giá từ khách hàng</h3>
-                                        <div className="flex items-center mt-2">
-                                            <div className="flex">
-                                                {[1, 2, 3, 4, 5].map((star) => (
-                                                    <Star
-                                                        key={star}
-                                                        className={`h-5 w-5 ${star <= 4 ? "fill-amber-400 text-amber-400" : "text-gray-300"}`}
-                                                    />
-                                                ))}
-                                            </div>
-                                            <span className="ml-2 text-sm text-gray-500">4.0/5 (36 đánh giá)</span>
+                                <motion.div variants={tabContentVariants} initial="hidden" animate="visible" exit="exit">
+                                    {/* Question input */}
+                                    <form onSubmit={handleSubmitQuestion} className="mb-8">
+                                        <div className="relative">
+                                            <Textarea
+                                                ref={questionInputRef}
+                                                value={newQuestion}
+                                                onChange={(e) => setNewQuestion(e.target.value)}
+                                                placeholder={isLoggedIn ? "Xin mời để lại câu hỏi, T2BIKE sẽ trả lời lại trong 1h, các câu hỏi từ 22h-6h sẽ được trả lời vào sáng hôm sau." : "Vui lòng đăng nhập để đặt câu hỏi"}
+                                                className="pr-14 min-h-[80px] border-gray-200 rounded-lg focus:border-pink-300 focus:ring focus:ring-pink-200 focus:ring-opacity-50"
+                                                disabled={!isLoggedIn}
+                                            />
+                                            <motion.button
+                                                type="submit"
+                                                whileHover={{ scale: 1.05 }}
+                                                whileTap={{ scale: 0.95 }}
+                                                disabled={!newQuestion.trim() || !isLoggedIn}
+                                                className="absolute right-3 top-3 bg-pink-500 text-white p-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                <Send size={18} />
+                                            </motion.button>
                                         </div>
-                                    </div>
-                                    <Button className="bg-pink-500 hover:bg-pink-600">Viết đánh giá</Button>
-                                </div>
+                                    </form>
 
-                                <Separator className="my-6" />
+                                    {/* Questions and answers list */}
+                                    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
+                                        {getCurrentPageQuestions().map((question) => (
+                                            <motion.div
+                                                key={question.id}
+                                                variants={itemVariants}
+                                                className="border border-gray-100 rounded-xl overflow-hidden"
+                                            >
+                                                {/* Question */}
+                                                <div className="p-4 bg-gray-50">
+                                                    <div className="flex items-start gap-3">
+                                                        <Avatar className="h-8 w-8 bg-blue-100 text-blue-500 flex items-center justify-center">
+                                                            <User size={16} />
+                                                        </Avatar>
+                                                        <div className="flex-1">
+                                                            <div className="flex justify-between mb-1">
+                                                                <h4 className="font-medium text-sm">{question.user}</h4>
+                                                                <span className="text-xs text-gray-500">{formatDate(new Date(question.date))}</span>
+                                                            </div>
 
-                                <div className="space-y-6">
-                                    {[1, 2, 3].map((review) => (
-                                        <div key={review} className="pb-6 border-b border-gray-100 last:border-0">
-                                            <div className="flex justify-between mb-2">
-                                                <div>
-                                                    <h4 className="font-medium">Nguyễn Văn A</h4>
-                                                    <div className="flex mt-1">
-                                                        {[1, 2, 3, 4, 5].map((star) => (
-                                                            <Star
-                                                                key={star}
-                                                                className={`h-4 w-4 ${star <= 5 ? "fill-amber-400 text-amber-400" : "text-gray-300"}`}
-                                                            />
-                                                        ))}
+                                                            {isEditing === question.id ? (
+                                                                <div className="mt-2">
+                                                                    <Textarea
+                                                                        value={editContent}
+                                                                        onChange={(e) => setEditContent(e.target.value)}
+                                                                        className="min-h-[80px] pr-14 text-sm border-gray-200 rounded-lg focus:border-pink-300 focus:ring focus:ring-pink-200 focus:ring-opacity-50"
+                                                                    />
+                                                                    <div className="flex justify-end gap-2 mt-2">
+                                                                        <Button
+                                                                            variant="outline"
+                                                                            size="sm"
+                                                                            onClick={() => {
+                                                                                setIsEditing(null);
+                                                                                setEditContent("");
+                                                                            }}
+                                                                        >
+                                                                            Hủy
+                                                                        </Button>
+                                                                        <Button
+                                                                            size="sm"
+                                                                            onClick={() => handleEditReview(question.id)}
+                                                                        >
+                                                                            Lưu
+                                                                        </Button>
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <p className="text-gray-700">{question.question}</p>
+                                                            )}
+
+                                                            {/* Edit/Delete buttons - only visible to the review owner */}
+                                                            {isLoggedIn && userId === question.userId && !isEditing && (
+                                                                <div className="mt-2 flex justify-end gap-2">
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="sm"
+                                                                        className="text-red-500 hover:text-red-600"
+                                                                        onClick={() => handleDeleteReview(question.id)}
+                                                                    >
+                                                                        <Trash2 className="h-4 w-4 mr-1" />
+                                                                    </Button>
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
-                                                <span className="text-sm text-gray-500">12/03/2023</span>
-                                            </div>
-                                            <p className="text-gray-600 mt-2">
-                                                Sản phẩm rất tốt, đúng như mô tả. Xe chạy êm, phanh nhạy và chuyển số mượt mà. Giao hàng nhanh và
-                                                đóng gói cẩn thận. Rất hài lòng với sản phẩm này!
-                                            </p>
-                                        </div>
-                                    ))}
-                                </div>
 
-                                <div className="mt-6 text-center">
-                                    <Button variant="outline" className="border-pink-500 text-pink-500 hover:bg-pink-50">
-                                        Xem thêm đánh giá
-                                    </Button>
-                                </div>
+                                                {/* Replies */}
+                                                {question.replies.map((reply) => (
+                                                    <motion.div
+                                                        key={reply.id}
+                                                        initial={{ opacity: 0, y: 10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        transition={{ type: "spring", stiffness: 300, damping: 24 }}
+                                                        className="p-4 border-t border-gray-100 bg-white"
+                                                    >
+                                                        <div className="flex items-start gap-3">
+                                                            <Avatar className="h-8 w-8 bg-pink-100 text-pink-500 flex items-center justify-center">
+                                                                <Store size={16} />
+                                                            </Avatar>
+                                                            <div className="flex-1">
+                                                                <div className="flex justify-between mb-1">
+                                                                    <h4 className="font-medium text-sm text-pink-500">{reply.adminName}</h4>
+                                                                    <span className="text-xs text-gray-500">{formatDate(new Date(reply.date))}</span>
+                                                                </div>
+                                                                <p className="text-gray-700 whitespace-pre-line">{reply.content}</p>
+                                                            </div>
+                                                        </div>
+                                                    </motion.div>
+                                                ))}
+
+                                                {/* Reply form - only visible when replying to this question */}
+                                                <AnimatePresence>
+                                                    {replyingTo === question.id && (
+                                                        <motion.div
+                                                            variants={replyFormVariants}
+                                                            initial="hidden"
+                                                            animate="visible"
+                                                            exit="exit"
+                                                            className="p-4 border-t border-gray-100 bg-gray-50"
+                                                        >
+                                                            <div className="flex items-start gap-3">
+                                                                <Avatar className="h-8 w-8 bg-pink-100 text-pink-500 flex items-center justify-center">
+                                                                    <Store size={16} />
+                                                                </Avatar>
+                                                                <div className="flex-1">
+                                                                    <div className="relative">
+                                                                        <Textarea
+                                                                            ref={replyInputRef}
+                                                                            value={replyContent}
+                                                                            onChange={(e) => setReplyContent(e.target.value)}
+                                                                            placeholder="Nhập câu trả lời của bạn..."
+                                                                            className="min-h-[80px] pr-14 text-sm border-gray-200 rounded-lg focus:border-pink-300 focus:ring focus:ring-pink-200 focus:ring-opacity-50"
+                                                                        />
+                                                                        <div className="absolute right-2 bottom-2 flex gap-2">
+                                                                            <motion.button
+                                                                                whileHover={{ scale: 1.05 }}
+                                                                                whileTap={{ scale: 0.95 }}
+                                                                                onClick={() => setReplyingTo(null)}
+                                                                                className="text-gray-400 hover:text-gray-600 p-1"
+                                                                            >
+                                                                                Hủy
+                                                                            </motion.button>
+                                                                            <motion.button
+                                                                                whileHover={{ scale: 1.05 }}
+                                                                                whileTap={{ scale: 0.95 }}
+                                                                                onClick={() => handleSubmitReply(question.id)}
+                                                                                disabled={!replyContent.trim()}
+                                                                                className="bg-pink-500 text-white p-1 px-3 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                            >
+                                                                                Gửi
+                                                                            </motion.button>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </motion.div>
+                                                    )}
+                                                </AnimatePresence>
+
+                                                {/* Reply button below the last reply or question if no replies */}
+                                                {isAdmin && question.replies.length > 0 && (
+                                                    <div className="p-3 border-t border-gray-100 bg-white">
+                                                        <motion.button
+                                                            whileHover={{ scale: 1.02 }}
+                                                            whileTap={{ scale: 0.98 }}
+                                                            onClick={() => setReplyingTo(question.id)}
+                                                            className="w-full text-center text-sm text-pink-500 hover:text-pink-600 py-1"
+                                                        >
+                                                            Trả lời thêm
+                                                        </motion.button>
+                                                    </div>
+                                                )}
+                                            </motion.div>
+                                        ))}
+                                    </motion.div>
+
+                                    {questions.length > questionsPerPage && (
+                                        <motion.div
+                                            variants={paginationVariants}
+                                            initial="hidden"
+                                            animate="visible"
+                                            className="mt-8 flex justify-center items-center gap-2"
+                                        >
+                                            <motion.button
+                                                variants={paginationItemVariants}
+                                                whileHover={{ scale: 1.1 }}
+                                                whileTap={{ scale: 0.95 }}
+                                                onClick={goToPrevQAPage}
+                                                disabled={currentQAPage === 1}
+                                                className="w-10 h-10 rounded-full flex items-center justify-center border border-pink-300 text-pink-500 hover:bg-pink-50 disabled:opacity-50 disabled:pointer-events-none transition-all duration-200"
+                                            >
+                                                <span className="sr-only">Trang trước</span>
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="18"
+                                                    height="18"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    strokeWidth="2"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                >
+                                                    <path d="m15 18-6-6 6-6" />
+                                                </svg>
+                                            </motion.button>
+
+                                            {Array.from({ length: totalQAPages }).map((_, index) => {
+                                                const pageNumber = index + 1
+                                                const isCurrentPage = pageNumber === currentQAPage
+
+                                                // Show current page, first, last, and pages around current
+                                                const shouldShow =
+                                                    pageNumber === 1 ||
+                                                    pageNumber === totalQAPages ||
+                                                    (pageNumber >= currentQAPage - 1 && pageNumber <= currentQAPage + 1)
+
+                                                // Show ellipsis for gaps
+                                                if (!shouldShow) {
+                                                    // Show ellipsis only once between gaps
+                                                    if (pageNumber === 2 || pageNumber === totalQAPages - 1) {
+                                                        return (
+                                                            <motion.span
+                                                                key={`qa-ellipsis-${pageNumber}`}
+                                                                variants={paginationItemVariants}
+                                                                className="text-gray-400 mx-1"
+                                                            >
+                                                                ...
+                                                            </motion.span>
+                                                        )
+                                                    }
+                                                    return null
+                                                }
+
+                                                return (
+                                                    <motion.button
+                                                        key={`qa-page-${pageNumber}`}
+                                                        variants={paginationItemVariants}
+                                                        whileHover={isCurrentPage ? {} : { scale: 1.1 }}
+                                                        whileTap={isCurrentPage ? {} : { scale: 0.95 }}
+                                                        onClick={() => setCurrentQAPage(pageNumber)}
+                                                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 ${isCurrentPage
+                                                            ? "bg-pink-500 text-white font-medium shadow-md"
+                                                            : "border border-pink-300 text-pink-500 hover:bg-pink-50"
+                                                            }`}
+                                                    >
+                                                        {pageNumber}
+                                                    </motion.button>
+                                                )
+                                            })}
+
+                                            <motion.button
+                                                variants={paginationItemVariants}
+                                                whileHover={{ scale: 1.1 }}
+                                                whileTap={{ scale: 0.95 }}
+                                                onClick={goToNextQAPage}
+                                                disabled={currentQAPage === totalQAPages}
+                                                className="w-10 h-10 rounded-full flex items-center justify-center border border-pink-300 text-pink-500 hover:bg-pink-50 disabled:opacity-50 disabled:pointer-events-none transition-all duration-200"
+                                            >
+                                                <span className="sr-only">Trang tiếp</span>
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="18"
+                                                    height="18"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    strokeWidth="2"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                >
+                                                    <path d="m9 18 6-6-6-6" />
+                                                </svg>
+                                            </motion.button>
+                                        </motion.div>
+                                    )}
+                                </motion.div>
                             </TabsContent>
                         </Tabs>
                     </div>
@@ -437,15 +1183,15 @@ export default function ProductDetail() {
             <footer className="bg-white mt-16 border-t max-w-screen-2xl mx-auto ">
                 <div className="border-t border-pink-100 bg-[#FFE4EF]">
                     <div className="container mx-auto px-4 py-8">
-                        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                            <div className="flex-1 w-full max-w-xl">
-                                <div className="flex gap-2">
-                                    <Input type="email" placeholder="Nhập Email Để Tư Vấn" className="bg-white" />
-                                    <Button className="bg-pink-500 hover:bg-pink-600 text-white min-w-[120px]">SUBSCRIBE</Button>
-                                </div>
+                        {/* <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div className="flex-1 w-full max-w-xl">
+                            <div className="flex gap-2">
+                                <Input type="email" placeholder="Nhập Email Để Tư Vấn" className="bg-white" />
+                                <Button className="bg-pink-500 hover:bg-pink-600 text-white min-w-[120px]">SUBSCRIBE</Button>
                             </div>
-                            <p className="text-gray-600 text-sm">Đăng ký để nhận được thông báo mới nhất từ T2BIKE</p>
                         </div>
+                        <p className="text-gray-600 text-sm">Đăng ký để nhận được thông báo mới nhất từ T2BIKE</p>
+                    </div> */}
                     </div>
                 </div>
 

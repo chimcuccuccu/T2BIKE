@@ -188,7 +188,7 @@ export default function SearchComponent() {
                             )}
                         </div>
 
-                        {displayProducts.length > 0 && (
+                        {/* {displayProducts.length > 0 && (
                             <div className="p-3 border-t border-gray-100">
                                 <button
                                     onClick={() => router.push(`/search?keyword=${searchTerm}`)}
@@ -197,7 +197,7 @@ export default function SearchComponent() {
                                     Xem tất cả kết quả
                                 </button>
                             </div>
-                        )}
+                        )} */}
                     </div>
                 </div>
             )}

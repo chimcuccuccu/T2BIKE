@@ -18,6 +18,7 @@ public class ProductReviewResponse {
     private String productName;
     private String answer;
     private LocalDateTime answeredAt;
+    private Long userId;
 
     public ProductReviewResponse(ProductReview review) {
         this.id = review.getId();
@@ -27,5 +28,6 @@ public class ProductReviewResponse {
         this.productName = review.getProduct().getName();
         this.answer = review.getAnswer();
         this.answeredAt = review.getAnsweredAt();
+        this.userId = review.getUser().getId();
     }
 }

@@ -38,7 +38,8 @@ public class ProductReviewService {
                 review.getCreatedAt(),
                 review.getProduct().getName(),
                 review.getAnswer(),
-                review.getAnsweredAt()
+                review.getAnsweredAt(),
+                review.getUser().getId()
         ));
     }
 
@@ -68,7 +69,8 @@ public class ProductReviewService {
                         r.getCreatedAt(),
                         r.getProduct().getName(),
                         r.getAnswer(),
-                        r.getAnsweredAt()))
+                        r.getAnsweredAt(),
+                        r.getUser().getId()))
                 .collect(Collectors.toList());
     }
 
