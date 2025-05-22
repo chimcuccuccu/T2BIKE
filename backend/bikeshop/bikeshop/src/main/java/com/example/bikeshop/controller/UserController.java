@@ -1,8 +1,10 @@
 package com.example.bikeshop.controller;
 
 import com.example.bikeshop.dto.UserDTO;
+import com.example.bikeshop.dto.UserOrderStatsDTO;
 import com.example.bikeshop.entity.User;
 import com.example.bikeshop.repository.UserRepository;
+import com.example.bikeshop.service.OrderService;
 import com.example.bikeshop.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +24,12 @@ import java.util.Optional;
 public class UserController {
     @Autowired
     private UserService userService;
+
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private OrderService orderService;
 
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody UserDTO userDTO) {
@@ -82,7 +88,6 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
-    // Kiểm tra thông tin user hiện tại trong session
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
@@ -96,6 +101,44 @@ public class UserController {
         }
 
         return ResponseEntity.ok(userOpt.get());
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<?> updateSelf(@RequestBody UserDTO dto, HttpSession session) {
+        Long currentUserId = (Long) session.getAttribute("userId");
+        if (currentUserId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Chưa đăng nhập");
+        }
+        try {
+            userService.updateUserInfo(currentUserId, currentUserId, dto);
+            return ResponseEntity.ok("Cập nhật thông tin thành công");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/admin/{id}")
+    public ResponseEntity<?> updateByAdmin (
+            @PathVariable Long id,
+            @RequestBody UserDTO dto,
+            HttpSession session
+    ) {
+        Long currentUserId = (Long) session.getAttribute("userId");
+        if (currentUserId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Chưa đăng nhập");
+        }
+        try {
+            userService.updateUserInfo(currentUserId, id, dto);
+            return ResponseEntity.ok("Admin cập nhật thông tin thành công");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/{userId}/order-stats")
+    public ResponseEntity<UserOrderStatsDTO> getUserOrderStats(@PathVariable Long userId) {
+        UserOrderStatsDTO stats = orderService.getUserOrderStats(userId);
+        return ResponseEntity.ok(stats);
     }
 
 }

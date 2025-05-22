@@ -55,6 +55,16 @@ public class OrderController {
         }
     }
 
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<?> getOrdersByUserId(@PathVariable Long userId) {
+        try {
+            List<Order> orders = orderService.getOrdersByUserId(userId);
+            return ResponseEntity.ok(orders);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body("Không tìm thấy đơn hàng cho userId: " + userId);
+        }
+    }
+
     @PostMapping
     public ResponseEntity<?> createOrder(@RequestBody CreateOrderRequest request, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
@@ -104,4 +114,24 @@ public class OrderController {
             return ResponseEntity.status(404).body("Không tìm thấy đơn hàng với ID: " + orderId);
         }
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<Order>> searchOrders(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String status) {
+
+        OrderStatus orderStatus = null;
+        if (status != null && !status.isEmpty()) {
+            try {
+                orderStatus = OrderStatus.valueOf(status.toUpperCase()); // chuyển từ String sang enum
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().body(null); // Trả lỗi nếu status không hợp lệ
+            }
+        }
+
+        List<Order> orders = orderService.searchOrders(keyword, String.valueOf(orderStatus));
+        return ResponseEntity.ok(orders);
+    }
+
+
 }

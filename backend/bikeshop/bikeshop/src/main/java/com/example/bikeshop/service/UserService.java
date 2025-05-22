@@ -56,4 +56,25 @@ public class UserService {
         return userRepository.findAll();
     }
 
+    public void updateUserInfo(Long currentUserId, Long targetUserId, UserDTO updatedUserDTO) {
+        User currentUser = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy current user"));
+
+        // Nếu không phải admin và không phải tự cập nhật chính mình → chặn
+        if (!currentUser.getId().equals(targetUserId) && !"admin".equalsIgnoreCase(currentUser.getRole())) {
+            throw new RuntimeException("Bạn không có quyền thực hiện thao tác này");
+        }
+
+        User user = userRepository.findById(targetUserId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy user cần cập nhật"));
+
+        if (updatedUserDTO.getFullName() != null) user.setFullName(updatedUserDTO.getFullName());
+        if (updatedUserDTO.getGender() != null) user.setGender(updatedUserDTO.getGender());
+        if (updatedUserDTO.getBirthDate() != null) user.setBirthDate(updatedUserDTO.getBirthDate());
+        if (updatedUserDTO.getEmail() != null) user.setEmail(updatedUserDTO.getEmail());
+        if (updatedUserDTO.getPhone() != null) user.setPhone(updatedUserDTO.getPhone());
+        if (updatedUserDTO.getAddress() != null) user.setAddress(updatedUserDTO.getAddress());
+
+        userRepository.save(user);
+    }
 }

@@ -79,7 +79,7 @@ export function UserMenu({ username, fullName }: UserMenuProps) {
               </div>
 
               <div className="p-2">
-                <Link href="/profile-home" className="flex w-full items-center gap-3 px-4 py-3 text-gray-700 hover:bg-pink-50 rounded-lg transition-colors">
+                <Link href="/profile" className="flex w-full items-center gap-3 px-4 py-3 text-gray-700 hover:bg-pink-50 rounded-lg transition-colors">
                   <User className="w-5 h-5 text-pink-500" />
                   <span>Tài khoản của tôi</span>
                 </Link>
