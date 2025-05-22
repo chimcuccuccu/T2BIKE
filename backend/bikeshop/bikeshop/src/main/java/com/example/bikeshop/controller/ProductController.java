@@ -70,8 +70,7 @@ public class ProductController {
     public ResponseEntity<?> createProductWithImages(
             @RequestPart("product") ProductDTO productDTO,
             @RequestPart("images") MultipartFile[] images,
-            HttpSession session
-    ) throws IOException {
+            HttpSession session) throws IOException {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Vui lòng đăng nhập");
@@ -100,14 +99,13 @@ public class ProductController {
             Image image = new Image(
                     (String) result.get("original_filename"),
                     (String) result.get("url"),
-                    (String) result.get("public_id")
-            );
+                    (String) result.get("public_id"));
             image.setProduct(savedProductEntity);
             imageService.save(image);
 
             uploadedUrls.add((String) result.get("url"));
         }
-        
+
         savedProductEntity.setImageUrls(uploadedUrls);
 
         productService.saveEntity(savedProductEntity);
@@ -115,8 +113,7 @@ public class ProductController {
         return ResponseEntity.ok(Map.of(
                 "message", "Tạo sản phẩm thành công",
                 "product", savedProductDTO,
-                "uploadedImages", uploadedUrls
-        ));
+                "uploadedImages", uploadedUrls));
     }
 
     @PutMapping("/{id}")

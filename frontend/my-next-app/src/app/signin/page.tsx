@@ -58,8 +58,12 @@ export default function LoginPage() {
           localStorage.setItem("token", response.data.token)
         }
 
-        // Reload the page to ensure all contexts are updated
-        window.location.href = "/home";
+        // Check user role and redirect accordingly
+        if (data.role === "admin") {
+          window.location.href = "/dashboard";
+        } else {
+          window.location.href = "/home";
+        }
       }
     } catch (err) {
       console.error("Login error:", err)

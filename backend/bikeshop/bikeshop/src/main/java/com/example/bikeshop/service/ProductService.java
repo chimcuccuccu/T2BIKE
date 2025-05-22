@@ -47,6 +47,11 @@ public class ProductService {
         existingProduct.setName(product.getName());
         existingProduct.setCategory(product.getCategory());
         existingProduct.setPrice(product.getPrice());
+        existingProduct.setDescription(product.getDescription());
+        existingProduct.setBrand(product.getBrand());
+        existingProduct.setQuantity(product.getQuantity());
+        existingProduct.setColor(product.getColor());
+        existingProduct.setImageUrls(product.getImageUrls());
         return productRepository.save(existingProduct);
     }
 
@@ -57,7 +62,7 @@ public class ProductService {
     }
 
     public Page<Product> filterProducts(String category, String brand, Double minPrice, Double maxPrice,
-                                        Pageable pageable) {
+            Pageable pageable) {
         Specification<Product> spec = Specification.where(ProductSpecification.hasCategory(category))
                 .and(ProductSpecification.hasBrand(brand))
                 .and(ProductSpecification.hasPriceBetween(minPrice, maxPrice));
