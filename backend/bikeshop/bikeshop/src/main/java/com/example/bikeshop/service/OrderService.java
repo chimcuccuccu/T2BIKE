@@ -3,6 +3,7 @@ package com.example.bikeshop.service;
 import com.example.bikeshop.dto.CreateOrderRequest;
 import com.example.bikeshop.dto.ShippingInfoDTO;
 import com.example.bikeshop.dto.ShippingInfoRequest;
+import com.example.bikeshop.dto.UserOrderStatsDTO;
 import com.example.bikeshop.entity.*;
 import com.example.bikeshop.repository.OrderRepository;
 import com.example.bikeshop.repository.ProductRepository;
@@ -127,4 +128,38 @@ public class OrderService {
         Pageable pageable = PageRequest.of(page, size, sort);
         return orderRepository.findAll(pageable);
     }
+
+    public UserOrderStatsDTO getUserOrderStats(Long userId) {
+        List<Object[]> results = orderRepository.getUserOrderStats(userId);
+        if (results.isEmpty()) {
+            return new UserOrderStatsDTO(0L, 0.0);
+        }
+        Object[] result = results.get(0);
+
+        Long totalOrders = ((Number) result[0]).longValue();
+        Double totalAmount = ((Number) result[1]).doubleValue();
+
+        return new UserOrderStatsDTO(totalOrders, totalAmount);
+    }
+
+    public List<Order> getOrdersByUserId(Long userId) {
+        List<Order> orders = orderRepository.findByUserId(userId);
+        if (orders.isEmpty()) {
+            throw new RuntimeException("Không có đơn hàng nào.");
+        }
+        return orders;
+    }
+
+    public List<Order> searchOrders(String keyword, String status) {
+        OrderStatus orderStatus = null;
+        if (status != null && !status.isBlank()) {
+            try {
+                orderStatus = OrderStatus.valueOf(status.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("Invalid status value: " + status);
+            }
+        }
+        return orderRepository.searchOrders(keyword, orderStatus);
+    }
+
 }
