@@ -7,7 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 interface AuthContextType {
   user: any;
   setUser: (user: any) => void;
-isAuthenticated: () => boolean;
+  isAuthenticated: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     fetchUser();
   }, []); // Chỉ chạy một lần khi trang được tải
 
-    const isAuthenticated = () => !!user;
+  const isAuthenticated = () => !!user;
 
   return (
     <AuthContext.Provider value={{ user, setUser, isAuthenticated }}>

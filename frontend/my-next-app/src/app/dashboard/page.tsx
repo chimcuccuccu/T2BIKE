@@ -15,7 +15,12 @@ import { MenuItem } from "@/types/menu-item"
 import { HeaderPage } from "@/components/Header/header-page"
 
 export default function Dashboard() {
-  const [activeItem, setActiveItem] = useState<string>("dashboard")
+  const [activeItem, setActiveItem] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('dashboardActiveItem') || "dashboard"
+    }
+    return "dashboard"
+  })
 
   const menuItems: MenuItem[] = [
     {
@@ -52,6 +57,7 @@ export default function Dashboard() {
 
   const handleMenuClick = (id: string) => {
     setActiveItem(id)
+    localStorage.setItem('dashboardActiveItem', id)
   }
 
   return (
