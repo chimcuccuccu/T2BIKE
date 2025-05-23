@@ -1,9 +1,11 @@
 "use client"
 
 import type React from "react"
-
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Package, ShoppingCart, DollarSign, TrendingUp, Users } from "lucide-react"
+import { getDashboardData, AdminDashboardResponse } from "@/services/dashboard"
+import { useToast } from "@/hooks/use-toast"
 
 type StatCardProps = {
   title: string
@@ -42,6 +44,44 @@ const container = {
 }
 
 export default function DashboardContent() {
+  const [dashboardData, setDashboardData] = useState<AdminDashboardResponse | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const { toast } = useToast()
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const data = await getDashboardData()
+        setDashboardData(data)
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch dashboard data",
+          variant: "destructive",
+        })
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchDashboardData()
+  }, [toast])
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(value)
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
+      </div>
+    )
+  }
+
   return (
     <div>
       <motion.h2
@@ -61,7 +101,7 @@ export default function DashboardContent() {
       >
         <StatCard
           title="Tổng sản phẩm"
-          value={0}
+          value={dashboardData?.totalProducts || 0}
           icon={<Package className="h-6 w-6 text-blue-500" />}
           color="bg-blue-100"
           delay={0.1}
@@ -69,7 +109,7 @@ export default function DashboardContent() {
 
         <StatCard
           title="Tổng đơn hàng"
-          value={0}
+          value={dashboardData?.totalOrders || 0}
           icon={<ShoppingCart className="h-6 w-6 text-pink-500" />}
           color="bg-pink-100"
           delay={0.2}
@@ -77,23 +117,23 @@ export default function DashboardContent() {
 
         <StatCard
           title="Doanh thu"
-          value={0}
+          value={formatCurrency(dashboardData?.totalRevenue || 0)}
           icon={<DollarSign className="h-6 w-6 text-yellow-500" />}
           color="bg-yellow-100"
           delay={0.3}
         />
 
-        <StatCard
+        {/* <StatCard
           title="Tăng trưởng"
           value={0}
           icon={<TrendingUp className="h-6 w-6 text-purple-500" />}
           color="bg-purple-100"
           delay={0.4}
-        />
+        /> */}
 
         <StatCard
           title="Tổng số người dùng"
-          value={0}
+          value={dashboardData?.totalUsers || 0}
           icon={<Users className="h-6 w-6 text-green-500" />}
           color="bg-green-100"
           delay={0.5}

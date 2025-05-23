@@ -34,12 +34,7 @@ public class BicycleDetailController {
         return new ResponseEntity<>(details, HttpStatus.OK);
     }
 
-    // Thêm detail mới
-    @PostMapping("/details")
-    public ResponseEntity<BicycleDetailDTO> addDetail(@RequestBody BicycleDetailRequest dto) {
-        BicycleDetailDTO newDetail = productDetailService.addDetail(dto);
-        return new ResponseEntity<>(newDetail, HttpStatus.CREATED);
-    }
+
 
     // Cập nhật detail
     @PutMapping("/details/{id}")

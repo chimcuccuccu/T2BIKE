@@ -58,7 +58,8 @@ public class UserController {
 
                 return ResponseEntity.ok(user);
             } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Sai tài khoản hoặc mật khẩu"));
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("message", "Sai tài khoản hoặc mật khẩu"));
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Lỗi: " + e.getMessage()));
@@ -118,11 +119,10 @@ public class UserController {
     }
 
     @PutMapping("/admin/{id}")
-    public ResponseEntity<?> updateByAdmin (
+    public ResponseEntity<?> updateByAdmin(
             @PathVariable Long id,
             @RequestBody UserDTO dto,
-            HttpSession session
-    ) {
+            HttpSession session) {
         Long currentUserId = (Long) session.getAttribute("userId");
         if (currentUserId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Chưa đăng nhập");
