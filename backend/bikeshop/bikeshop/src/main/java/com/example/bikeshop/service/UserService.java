@@ -68,12 +68,18 @@ public class UserService {
         User user = userRepository.findById(targetUserId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy user cần cập nhật"));
 
-        if (updatedUserDTO.getFullName() != null) user.setFullName(updatedUserDTO.getFullName());
-        if (updatedUserDTO.getGender() != null) user.setGender(updatedUserDTO.getGender());
-        if (updatedUserDTO.getBirthDate() != null) user.setBirthDate(updatedUserDTO.getBirthDate());
-        if (updatedUserDTO.getEmail() != null) user.setEmail(updatedUserDTO.getEmail());
-        if (updatedUserDTO.getPhone() != null) user.setPhone(updatedUserDTO.getPhone());
-        if (updatedUserDTO.getAddress() != null) user.setAddress(updatedUserDTO.getAddress());
+        if (updatedUserDTO.getFullName() != null)
+            user.setFullName(updatedUserDTO.getFullName());
+        if (updatedUserDTO.getGender() != null)
+            user.setGender(updatedUserDTO.getGender());
+        if (updatedUserDTO.getBirthDate() != null)
+            user.setBirthDate(updatedUserDTO.getBirthDate());
+        if (updatedUserDTO.getEmail() != null)
+            user.setEmail(updatedUserDTO.getEmail());
+        if (updatedUserDTO.getPhone() != null)
+            user.setPhone(updatedUserDTO.getPhone());
+        if (updatedUserDTO.getAddress() != null)
+            user.setAddress(updatedUserDTO.getAddress());
 
         userRepository.save(user);
     }
