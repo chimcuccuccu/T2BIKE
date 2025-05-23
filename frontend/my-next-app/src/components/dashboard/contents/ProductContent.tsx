@@ -176,7 +176,7 @@ export default function ProductsContent() {
                           setIsDetailModalOpen(true)
                         }}
                       >
-                        <Eye className="h-4 w-4 text-orange-600" />
+                        <Eye className="h-4 w-4 text-blue-800" />
                       </Button>
                       <Button
                         variant="outline"

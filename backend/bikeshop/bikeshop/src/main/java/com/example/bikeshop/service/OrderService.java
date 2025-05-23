@@ -17,6 +17,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -86,23 +87,53 @@ public class OrderService {
         return order;
     }
 
-    public Order updateOrder(Long orderId, Order updatedOrder) {
+    public Order updateOrder(Long orderId, CreateOrderRequest request) {
+        // 1. Tìm đơn hàng cũ
         Order existingOrder = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng với ID: " + orderId));
 
-        existingOrder.setCustomerName(updatedOrder.getCustomerName());
+        // 2. Cập nhật thông tin cơ bản
+        existingOrder.setCustomerName(request.getCustomerName());
 
+        // 3. Xoá item cũ
         existingOrder.getItems().clear();
 
-        for (OrderItem item : updatedOrder.getItems()) {
-            Product product = productRepository.findById(item.getProduct().getId())
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm"));
+        // 4. Thêm item mới
+        List<OrderItem> updatedItems = new ArrayList<>();
+        BigDecimal totalPrice = BigDecimal.ZERO;
+
+        for (CreateOrderRequest.ItemRequest itemReq : request.getItems()) {
+            Product product = productRepository.findById(itemReq.getProductId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + itemReq.getProductId()));
+
+            OrderItem item = new OrderItem();
             item.setOrder(existingOrder);
             item.setProduct(product);
+            item.setQuantity(itemReq.getQuantity());
             item.setPriceAtOrder(product.getPrice());
+
+            BigDecimal itemTotal = BigDecimal.valueOf(product.getPrice())
+                    .multiply(BigDecimal.valueOf(itemReq.getQuantity()));
+            totalPrice = totalPrice.add(itemTotal);
+
+            updatedItems.add(item);
         }
 
-        existingOrder.setItems(updatedOrder.getItems());
+        existingOrder.setItems(updatedItems);
+        existingOrder.setTotalPrice(totalPrice);
+
+        // 5. Cập nhật thông tin vận chuyển nếu có
+        ShippingInfoRequest shippingInfoRequest = request.getShippingInfo();
+        ShippingInfo shippingInfo = existingOrder.getShippingInfo();
+        if (shippingInfo != null) {
+            shippingInfo.setReceiverName(shippingInfoRequest.getReceiverName());
+            shippingInfo.setPhone(shippingInfoRequest.getPhone());
+            shippingInfo.setProvince(shippingInfoRequest.getProvince());
+            shippingInfo.setDistrict(shippingInfoRequest.getDistrict());
+            shippingInfo.setAddress(shippingInfoRequest.getAddress());
+            shippingInfo.setNote(shippingInfoRequest.getNote());
+            shippingInfoRepository.save(shippingInfo);
+        }
 
         return orderRepository.save(existingOrder);
     }
