@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -90,14 +91,18 @@ public class OrderController {
     }
 
     @PutMapping("/{orderId}")
-    public ResponseEntity<?> updateOrder(@PathVariable Long orderId, @RequestBody Order updatedOrder) {
+    public ResponseEntity<?> updateOrder(
+            @PathVariable Long orderId,
+            @RequestBody CreateOrderRequest request
+    ) {
         try {
-            Order order = orderService.updateOrder(orderId, updatedOrder);
-            return ResponseEntity.ok(order);
+            Order updatedOrder = orderService.updateOrder(orderId, request);
+            return ResponseEntity.ok(updatedOrder);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(404).body("Không tìm thấy đơn hàng hoặc sản phẩm");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
+
 
     @PutMapping("/{orderId}/status")
     public ResponseEntity<?> updateOrderStatus(@PathVariable Long orderId, @RequestParam String status) {
