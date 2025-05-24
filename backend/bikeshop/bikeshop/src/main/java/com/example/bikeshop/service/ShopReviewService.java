@@ -6,9 +6,12 @@ import com.example.bikeshop.dto.ShopReviewStatsDTO;
 import com.example.bikeshop.entity.ShopReview;
 import com.example.bikeshop.entity.User;
 import com.example.bikeshop.repository.ShopReviewRepository;
+import com.example.bikeshop.specification.ShopReviewSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -121,5 +124,25 @@ public class ShopReviewService {
         long totalReviews = starCounts.values().stream().mapToLong(Long::longValue).sum();
 
         return new ShopReviewStatsDTO(average, totalReviews, starCounts);
+    }
+
+    public Page<ShopReviewResponse> searchReviews(Integer rating, String keyword, Pageable pageable) {
+        Specification<ShopReview> spec = Specification.where(ShopReviewSpecification.hasRating(rating))
+                .and(ShopReviewSpecification.containsKeyword(keyword));
+
+        Page<ShopReview> reviews = shopReviewRepository.findAll(spec, pageable);
+
+        return reviews.map(this::convertToResponse); // convert entity → DTO
+    }
+
+    private ShopReviewResponse convertToResponse(ShopReview review) {
+        ShopReviewResponse res = new ShopReviewResponse();
+        res.setId(review.getId());
+        res.setComment(review.getComment());
+        res.setRating(review.getRating());
+        res.setReviewerName(review.getUser().getUsername());
+        res.setCreatedAt(review.getCreatedAt());
+        res.setUserId(review.getUser().getId());
+        return res;
     }
 }

@@ -37,6 +37,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 export default function OrdersContent() {
   const [orders, setOrders] = useState<Order[]>([])
@@ -48,6 +55,8 @@ export default function OrdersContent() {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [searchKeyword, setSearchKeyword] = useState("")
+  const [selectedStatus, setSelectedStatus] = useState<string>("")
   const { toast } = useToast()
 
   const fetchOrders = async (page: number) => {
@@ -66,9 +75,64 @@ export default function OrdersContent() {
     }
   }
 
+  const searchOrders = async () => {
+    try {
+      setIsLoading(true)
+      let url = `http://localhost:8081/api/orders/search?`
+      const params = new URLSearchParams()
+
+      if (searchKeyword) {
+        params.append('keyword', searchKeyword)
+      }
+      if (selectedStatus && selectedStatus !== 'ALL') {
+        params.append('status', selectedStatus)
+      }
+
+      // Only make the search request if we have search parameters
+      if (params.toString()) {
+        url += params.toString()
+        const response = await fetch(url)
+        const data: Order[] = await response.json()
+
+        // Even if we get a 500 status, if we have data, we'll use it
+        if (data && Array.isArray(data)) {
+          setOrders(data)
+          setTotalPages(Math.ceil(data.length / pageSize))
+          setCurrentPage(0)
+        } else {
+          throw new Error('Invalid response format')
+        }
+      } else {
+        // If no search parameters, fetch all orders
+        fetchOrders(currentPage)
+      }
+    } catch (error) {
+      console.error("Error searching orders:", error)
+      // Only show error toast if we actually failed to get results
+      if (orders.length === 0) {
+        toast({
+          title: "Lỗi",
+          description: "Không thể tìm kiếm đơn hàng",
+          variant: "destructive",
+        })
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   useEffect(() => {
-    fetchOrders(currentPage)
-  }, [currentPage])
+    // Add debounce to prevent too many API calls
+    const timeoutId = setTimeout(() => {
+      if (searchKeyword || (selectedStatus && selectedStatus !== 'ALL')) {
+        searchOrders()
+      } else {
+        fetchOrders(currentPage)
+      }
+    }, 500) // 500ms debounce
+
+    return () => clearTimeout(timeoutId)
+  }, [currentPage, searchKeyword, selectedStatus])
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
@@ -163,11 +227,23 @@ export default function OrdersContent() {
           <Input
             placeholder="Tìm kiếm đơn hàng..."
             className="pl-10 border-gray-200 focus:border-pink-300 focus:ring-pink-200"
+            value={searchKeyword}
+            onChange={(e) => setSearchKeyword(e.target.value)}
           />
         </div>
-        <Button variant="outline" className="border-gray-200 text-gray-600">
-          <Filter className="mr-2 h-4 w-4" /> Lọc
-        </Button>
+        <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Trạng thái" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ALL">Tất cả</SelectItem>
+            <SelectItem value="PENDING">Chờ xác nhận</SelectItem>
+            <SelectItem value="CONFIRMED">Đã xác nhận</SelectItem>
+            <SelectItem value="SHIPPING">Đang giao</SelectItem>
+            <SelectItem value="DELIVERED">Đã giao</SelectItem>
+            <SelectItem value="CANCELLED">Đã hủy</SelectItem>
+          </SelectContent>
+        </Select>
       </motion.div>
 
       {isLoading ? (

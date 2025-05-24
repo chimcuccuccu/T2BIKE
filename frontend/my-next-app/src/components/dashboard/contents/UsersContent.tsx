@@ -60,6 +60,7 @@ export default function UsersContent() {
   const [totalPages, setTotalPages] = useState(0)
   const [pageSize] = useState(5)
   const [loading, setLoading] = useState(true)
+  const [searchKeyword, setSearchKeyword] = useState("")
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [selectedUsername, setSelectedUsername] = useState<string | null>(null)
@@ -70,7 +71,11 @@ export default function UsersContent() {
   const fetchUsers = async (page: number) => {
     try {
       setLoading(true)
-      const response = await fetch(`http://localhost:8081/api/users/?page=${page}&size=${pageSize}`)
+      const url = searchKeyword
+        ? `http://localhost:8081/api/users/search?keyword=${encodeURIComponent(searchKeyword)}&page=${page}&size=${pageSize}`
+        : `http://localhost:8081/api/users/?page=${page}&size=${pageSize}`
+
+      const response = await fetch(url)
       const data: PageResponse = await response.json()
       setUsers(data.content)
       setTotalPages(data.totalPages)
@@ -83,10 +88,15 @@ export default function UsersContent() {
 
   useEffect(() => {
     fetchUsers(currentPage)
-  }, [currentPage])
+  }, [currentPage, searchKeyword])
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
+  }
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchKeyword(e.target.value)
+    setCurrentPage(0) // Reset to first page when searching
   }
 
   const handleViewUser = (username: string) => {
@@ -161,10 +171,19 @@ export default function UsersContent() {
           <Input
             placeholder="Tìm kiếm người dùng..."
             className="pl-10 border-gray-200 focus:border-pink-300 focus:ring-pink-200"
+            value={searchKeyword}
+            onChange={handleSearch}
           />
         </div>
-        <Button variant="outline" className="border-gray-200 text-gray-600">
-          <Filter className="mr-2 h-4 w-4" /> Lọc
+        <Button
+          variant="outline"
+          className="border-gray-200 text-gray-600"
+          onClick={() => {
+            setSearchKeyword("")
+            setCurrentPage(0)
+          }}
+        >
+          <Filter className="mr-2 h-4 w-4" /> Xóa bộ lọc
         </Button>
       </motion.div>
 

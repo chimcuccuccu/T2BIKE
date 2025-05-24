@@ -5,11 +5,13 @@ import com.example.bikeshop.entity.Product;
 import com.example.bikeshop.entity.User;
 import com.example.bikeshop.repository.ProductRepository;
 import com.example.bikeshop.repository.UserRepository;
+import com.example.bikeshop.specification.UserSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -95,6 +97,11 @@ public class UserService {
             throw new RuntimeException("User không tồn tại");
         }
         userRepository.deleteById(id);
+    }
+
+    public Page<User> searchUsers(String keyword, int page, int size) {
+        Specification<User> spec = UserSpecification.containsKeywordInMultipleFields(keyword);
+        return userRepository.findAll(spec, PageRequest.of(page, size));
     }
 
 }

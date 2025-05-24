@@ -9,6 +9,7 @@ import com.example.bikeshop.service.ShopReviewService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -103,6 +104,16 @@ public class ShopReviewController {
     @GetMapping("/stats")
     public ResponseEntity<ShopReviewStatsDTO> getStats() {
         return ResponseEntity.ok(reviewService.getReviewStats());
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<?> searchReviews(
+            @RequestParam(required = false) Integer rating,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size
+    ) {
+        return ResponseEntity.ok(reviewService.searchReviews(rating, keyword, PageRequest.of(page, size)));
     }
 }
 

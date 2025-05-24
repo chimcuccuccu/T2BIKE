@@ -28,6 +28,11 @@ import ProductSpecs from "@/components/ProductSpecs"
 import QuestionsAnswers from "@/components/QuestionAnswer"
 import { HeaderPage } from "@/components/Header/header-page"
 import { Textarea } from "@/components/ui/textarea"
+import { useCart } from "@/context/CartContext"
+import { useUser } from "@/hooks/useUser"
+import { useToast } from "@/hooks/use-toast"
+import { useRouter } from "next/navigation"
+import { useWishlist } from "@/context/WishlistContext"
 
 // Add type definition for Question
 type Question = {
@@ -68,6 +73,12 @@ export default function ProductDetail() {
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
     const [reviewToDelete, setReviewToDelete] = useState<string | null>(null);
     const modalRef = useRef<HTMLDivElement>(null);
+
+    const { addToCart, removeFromCart, isInCart } = useCart();
+    const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+    const { user } = useUser();
+    const { toast } = useToast();
+    const router = useRouter();
 
     const increaseQuantity = () => setQuantity((prev) => prev + 1)
     const decreaseQuantity = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1))
@@ -527,6 +538,139 @@ export default function ProductDetail() {
         }
     }, [notification]);
 
+    const handleAddToCart = () => {
+        if (!user) {
+            toast({
+                variant: "pink",
+                title: "Vui lòng đăng nhập!",
+                description: (
+                    <>
+                        Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng.
+                        <Button
+                            size="sm"
+                            variant="link"
+                            onClick={() => router.push("/signin")}
+                            className="text-white font-semibold text-sm bg-pink-600 hover:bg-pink-700 border border-transparent rounded-md px-4 py-2 mt-2 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2"
+                        >
+                            Đăng nhập
+                        </Button>
+                    </>
+                ),
+            });
+            return;
+        }
+
+        if (!product) return;
+
+        if (isInCart(product.id)) {
+            removeFromCart(product.id);
+            toast({
+                variant: "pink",
+                title: "Đã xóa khỏi giỏ hàng!",
+                description: `${product.name} đã được xóa khỏi giỏ hàng của bạn.`,
+            });
+        } else {
+            addToCart(product);
+            toast({
+                variant: "pink",
+                title: "Đã thêm vào giỏ hàng!",
+                description: `${product.name} đã được thêm vào giỏ hàng của bạn.`,
+            });
+        }
+    };
+
+    const handleAddToWishlist = async () => {
+        if (!user) {
+            toast({
+                variant: "pink",
+                title: "Vui lòng đăng nhập!",
+                description: (
+                    <>
+                        Bạn cần đăng nhập để thêm sản phẩm vào danh sách yêu thích.
+                        <Button
+                            size="sm"
+                            variant="link"
+                            onClick={() => router.push("/signin")}
+                            className="text-white font-semibold text-sm bg-pink-600 hover:bg-pink-700 border border-transparent rounded-md px-4 py-2 mt-2 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2"
+                        >
+                            Đăng nhập
+                        </Button>
+                    </>
+                ),
+            });
+            return;
+        }
+
+        if (!product) return;
+
+        try {
+            if (isInWishlist(product.id)) {
+                // Gọi API xóa khỏi wishlist
+                await axios.delete(`http://localhost:8081/api/wishlist/delete/${product.id}`, {
+                    withCredentials: true
+                });
+                removeFromWishlist(product.id);
+                toast({
+                    variant: "pink",
+                    title: "Đã xóa khỏi danh sách yêu thích!",
+                    description: `${product.name} đã được xóa khỏi danh sách yêu thích của bạn.`,
+                });
+            } else {
+                // Gọi API thêm vào wishlist
+                await axios.post('http://localhost:8081/api/wishlist/add', {
+                    userId: user.id,
+                    productId: product.id
+                }, {
+                    withCredentials: true
+                });
+                addToWishlist(product);
+                toast({
+                    variant: "pink",
+                    title: "Đã thêm vào danh sách yêu thích!",
+                    description: `${product.name} đã được thêm vào danh sách yêu thích của bạn.`,
+                });
+            }
+        } catch (error) {
+            console.error('Error handling wishlist:', error);
+            toast({
+                variant: "destructive",
+                title: "Có lỗi xảy ra!",
+                description: "Không thể thực hiện thao tác này. Vui lòng thử lại sau.",
+            });
+        }
+    };
+
+    const handleBuyNow = () => {
+        if (!user) {
+            toast({
+                variant: "pink",
+                title: "Vui lòng đăng nhập!",
+                description: (
+                    <>
+                        Bạn cần đăng nhập để mua hàng.
+                        <Button
+                            size="sm"
+                            variant="link"
+                            onClick={() => router.push("/signin")}
+                            className="text-white font-semibold text-sm bg-pink-600 hover:bg-pink-700 border border-transparent rounded-md px-4 py-2 mt-2 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2"
+                        >
+                            Đăng nhập
+                        </Button>
+                    </>
+                ),
+            });
+            return;
+        }
+
+        if (!product) return;
+
+        // Add to cart first
+        addToCart(product);
+
+        // Then redirect to checkout
+        router.push("/checkout");
+    };
+
     if (!product) return (
         <div className="flex items-center justify-center h-screen">
             <Image
@@ -743,17 +887,17 @@ export default function ProductDetail() {
                                     <div>
                                         <h1 className="text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
                                         <div className="flex items-center gap-4 mb-2">
-                                            <div className="flex">
+                                            {/* <div className="flex">
                                                 {[1, 2, 3, 4, 5].map((star) => (
                                                     <Star
                                                         key={star}
                                                         className={`h-5 w-5 ${star <= 4 ? "fill-amber-400 text-amber-400" : "text-gray-300"}`}
                                                     />
                                                 ))}
-                                            </div>
-                                            <span className="text-sm text-gray-500">36 đánh giá</span>
+                                            </div> */}
+                                            {/* <span className="text-sm text-gray-500">36 đánh giá</span> */}
                                         </div>
-                                        <p className="text-sm text-gray-500 mb-4">Mã sản phẩm: TT012</p>
+                                        <p className="text-sm text-gray-500 mb-4">Mã sản phẩm: TT{product.id}</p>
                                     </div>
                                 </div>
 
@@ -814,24 +958,41 @@ export default function ProductDetail() {
 
                                 {/* Action buttons */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full mb-6">
-                                    <Button className="w-[400] h-12 text-base font-medium bg-pink-500 hover:bg-pink-600">Mua ngay</Button>
+                                    <Button
+                                        className="w-[400] h-12 text-base font-medium bg-pink-500 hover:bg-pink-600"
+                                        onClick={handleBuyNow}
+                                    >
+                                        Mua ngay
+                                    </Button>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3 mb-6">
-
                                     <Button
                                         variant="secondary"
-                                        className="h-12 text-base font-medium flex items-center justify-center gap-2 bg-pink-100 hover:bg-pink-200 text-pink-700"
+                                        className={cn(
+                                            "h-12 text-base font-medium flex items-center justify-center gap-2",
+                                            isInWishlist(product?.id || 0)
+                                                ? "bg-pink-500 text-white hover:bg-pink-600"
+                                                : "bg-pink-100 hover:bg-pink-200 text-pink-700"
+                                        )}
+                                        onClick={handleAddToWishlist}
                                     >
-                                        <Heart className="h-5 w-5" />
-                                        Yêu thích
+                                        <Heart className={cn("h-5 w-5", isInWishlist(product?.id || 0) && "fill-current")} />
+                                        {isInWishlist(product?.id || 0) ? "Đã yêu thích" : "Yêu thích"}
                                     </Button>
 
                                     <Button
                                         variant="outline"
-                                        className="h-12 text-base font-medium border-pink-500 text-pink-500 hover:bg-pink-50"
+                                        className={cn(
+                                            "h-12 text-base font-medium border-pink-500",
+                                            isInCart(product?.id || 0)
+                                                ? "bg-pink-500 text-white hover:bg-pink-600"
+                                                : "text-pink-500 hover:bg-pink-50"
+                                        )}
+                                        onClick={handleAddToCart}
                                     >
-                                        Thêm vào giỏ hàng
+                                        <ShoppingCart className="h-5 w-5 mr-2" />
+                                        {isInCart(product?.id || 0) ? "Đã thêm vào giỏ" : "Thêm vào giỏ hàng"}
                                     </Button>
                                 </div>
 

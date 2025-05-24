@@ -117,9 +117,8 @@ export default function LoginPage() {
           className="p-8 md:p-12 flex flex-col justify-center animate-fade-left"
         >
           <div className="w-full max-w-md mx-auto space-y-6">
-
             <>
-              {/* Google Sign In Button */}
+              {/* Google Sign In Button
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -153,7 +152,7 @@ export default function LoginPage() {
                 <div className="relative flex justify-center text-sm">
                   <span className="px-2 bg-white text-gray-500">hoặc</span>
                 </div>
-              </div>
+              </div> */}
 
               <form onSubmit={handleLogin} className="space-y-4">
                 {error && (
@@ -212,11 +211,11 @@ export default function LoginPage() {
                   </Button>
                 </motion.div>
 
-                <div className="text-center">
+                {/* <div className="text-center">
                   <a href="#" className="text-sm text-pink-500 hover:text-pink-600 transition-colors">
                     Quên mật khẩu?
                   </a>
-                </div>
+                </div> */}
               </form>
 
               <div className="pt-4">
