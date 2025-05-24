@@ -1,20 +1,20 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Home, Package, ShoppingCart, Users, Settings } from "lucide-react"
+import { Home, Package, ShoppingCart, Users, Settings, Star, ArrowLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
 import OrdersContent from "@/components/dashboard/contents/OrdersContent"
 import DashboardContent from "@/components/dashboard/contents/DashboardContent"
 import ProductsContent from "@/components/dashboard/contents/ProductContent"
 import UsersContent from "@/components/dashboard/contents/UsersContent"
-import SettingsContent from "@/components/dashboard/contents/SettingsContent"
+import ReviewsContent from "@/components/dashboard/contents/ReviewsContent"
 import { MenuItem } from "@/types/menu-item"
-import { HeaderPage } from "@/components/Header/header-page"
+import { useRouter } from "next/navigation"
 
 export default function Dashboard() {
+  const router = useRouter()
+
   const [activeItem, setActiveItem] = useState<string>(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('dashboardActiveItem') || "dashboard"
@@ -48,14 +48,25 @@ export default function Dashboard() {
       content: <UsersContent />,
     },
     {
-      id: "settings",
-      label: "Cài đặt",
-      icon: <Settings className="h-5 w-5" />,
-      content: <SettingsContent />,
+      id: "review",
+      label: "Đánh giá",
+      icon: <Star className="h-5 w-5" />,
+      content: <ReviewsContent />,
     },
+    {
+      id: "web",
+      label: "Quay trở lại trang web",
+      icon: <ArrowLeft className="h-5 w-5" />,
+      content: "/home",  // đây chỉ là đường dẫn
+    }
   ]
 
   const handleMenuClick = (id: string) => {
+    if (id === "web") {
+      router.push("/home")  // chuyển hướng về trang /home
+      return
+    }
+
     setActiveItem(id)
     localStorage.setItem('dashboardActiveItem', id)
   }
@@ -125,4 +136,3 @@ export default function Dashboard() {
     </div>
   )
 }
-

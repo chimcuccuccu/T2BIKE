@@ -187,7 +187,7 @@ export default function OrderEditModal({ isOpen, onClose, orderId, onOrderUpdate
                     </div>
 
                     <div className="space-y-4">
-                        <h3 className="font-medium text-pink-600 font-semibold">Thông tin giao hàng</h3>
+                        <h3 className="text-pink-600 font-semibold">Thông tin giao hàng</h3>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="receiverName"

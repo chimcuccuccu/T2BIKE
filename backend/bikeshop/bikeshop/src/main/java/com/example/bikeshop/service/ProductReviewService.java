@@ -78,24 +78,33 @@ public class ProductReviewService {
         ProductReview review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đánh giá"));
 
-        if (!review.getUser().getId().equals(userId)) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+        if (!review.getUser().getId().equals(userId) && !"admin".equalsIgnoreCase(user.getRole())) {
             throw new RuntimeException("Không có quyền xoá đánh giá này");
         }
 
         reviewRepository.delete(review);
     }
 
+
     public void updateReview(Long reviewId, ProductReviewRequestDTO request, Long userId) {
         ProductReview review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đánh giá"));
 
-        if (!review.getUser().getId().equals(userId)) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+        // Check quyền: nếu không phải chủ review và không phải admin thì lỗi
+        if (!review.getUser().getId().equals(userId) && !"admin".equalsIgnoreCase(user.getRole())) {
             throw new RuntimeException("Không có quyền sửa đánh giá này");
         }
 
         review.setComment(request.getComment());
         reviewRepository.save(review);
     }
+
 
     public void answerReview(Long reviewId, String answer, Long adminId) {
         User admin = userRepository.findById(adminId)
