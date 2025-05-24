@@ -389,6 +389,7 @@ export default function StoreRating() {
                                     onMouseEnter={() => setHoverRating(star)}
                                     onMouseLeave={() => setHoverRating(0)}
                                     className="focus:outline-none transform transition-transform duration-200 hover:scale-110"
+                                    suppressHydrationWarning
                                 >
                                     <Star
                                         className={cn(
@@ -409,6 +410,7 @@ export default function StoreRating() {
                                 onChange={(e) => setComment(e.target.value)}
                                 placeholder="Xin mời bạn để lại đánh giá để T2BIKE có thể phát triển hơn nhau!"
                                 className="rounded-full py-6 px-4 border-gray-200 shadow-sm focus:border-pink-300 focus:ring focus:ring-pink-200 focus:ring-opacity-50 transition-all duration-300"
+                                suppressHydrationWarning
                             />
                             <Button
                                 onClick={handleSubmit}
@@ -481,6 +483,7 @@ export default function StoreRating() {
                                                                 onMouseEnter={() => setEditHoverRating(star)}
                                                                 onMouseLeave={() => setEditHoverRating(0)}
                                                                 className="focus:outline-none transform transition-transform duration-200 hover:scale-110"
+                                                                suppressHydrationWarning
                                                             >
                                                                 <Star
                                                                     className={cn(
@@ -499,6 +502,7 @@ export default function StoreRating() {
                                                     value={editComment}
                                                     onChange={(e) => setEditComment(e.target.value)}
                                                     className="mb-2 focus:border-pink-300 focus:ring focus:ring-pink-200 focus:ring-opacity-50 transition-all duration-300"
+                                                    suppressHydrationWarning
                                                 />
                                                 <div className="flex gap-2">
                                                     <Button

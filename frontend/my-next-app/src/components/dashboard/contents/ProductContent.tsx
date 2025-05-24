@@ -38,6 +38,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { SliderCustom } from "@/app/all-products/slider"
 
 export default function ProductsContent() {
   const [products, setProducts] = useState<Product[]>([])
@@ -50,6 +58,16 @@ export default function ProductsContent() {
   const [isLoading, setIsLoading] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [productToDelete, setProductToDelete] = useState<number | null>(null)
+  const [isFiltered, setIsFiltered] = useState(false)
+  const [priceRange, setPriceRange] = useState([0, 50])
+  const [category, setCategory] = useState("")
+  const [brand, setBrand] = useState("")
+  const [filters, setFilters] = useState({
+    minPrice: 0,
+    maxPrice: 0,
+    category: "",
+    brand: "",
+  })
   const router = useRouter()
   const { toast } = useToast()
 
@@ -70,9 +88,110 @@ export default function ProductsContent() {
     }
   }
 
+  const fetchFilteredProducts = async () => {
+    try {
+      setIsLoading(true)
+      const params: Record<string, string> = {
+        minPrice: filters.minPrice.toString(),
+        maxPrice: filters.maxPrice.toString(),
+        page: currentPage.toString(),
+        size: "9"
+      }
+      if (filters.category) params.category = filters.category
+      if (filters.brand) params.brand = filters.brand
+
+      const query = new URLSearchParams(params).toString()
+      const url = `http://localhost:8081/api/all-products/filter?${query}`
+
+      const response = await axios.get(url)
+      setProducts(response.data.content)
+      setTotalPages(response.data.totalPages)
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to filter products",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   useEffect(() => {
-    fetchProducts(currentPage)
-  }, [currentPage])
+    if (isFiltered) {
+      fetchFilteredProducts()
+    } else {
+      fetchProducts(currentPage)
+    }
+  }, [currentPage, isFiltered])
+
+  const handleSearch = async () => {
+    setCurrentPage(0)
+    const newFilters = {
+      minPrice: priceRange[0] * 1_000_000,
+      maxPrice: priceRange[1] * 1_000_000,
+      category: category,
+      brand: brand,
+    }
+    setFilters(newFilters)
+    setIsFiltered(true)
+
+    try {
+      setIsLoading(true)
+      const params: Record<string, string> = {
+        minPrice: newFilters.minPrice.toString(),
+        maxPrice: newFilters.maxPrice.toString(),
+        page: "0",
+        size: "9"
+      }
+      if (newFilters.category) params.category = newFilters.category
+      if (newFilters.brand) params.brand = newFilters.brand
+
+      const query = new URLSearchParams(params).toString()
+      const url = `http://localhost:8081/api/all-products/filter?${query}`
+
+      const response = await axios.get(url)
+      setProducts(response.data.content)
+      setTotalPages(response.data.totalPages)
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to filter products",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleReset = async () => {
+    setCurrentPage(0)
+    setPriceRange([0, 50])
+    setCategory("")
+    setBrand("")
+    setFilters({
+      minPrice: 0,
+      maxPrice: 0,
+      category: "",
+      brand: "",
+    })
+    setIsFiltered(false)
+
+    try {
+      setIsLoading(true)
+      const response = await axios.get(`http://localhost:8081/api/all-products?page=0&size=9`)
+      setProducts(response.data.content)
+      setTotalPages(response.data.totalPages)
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to reset products",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const handleDelete = async (productId: number) => {
     try {
@@ -123,21 +242,70 @@ export default function ProductsContent() {
       </motion.div>
 
       <motion.div
-        className="bg-white p-4 rounded-xl shadow-sm mb-6 flex flex-col sm:flex-row gap-4"
+        className="bg-white p-6 rounded-xl shadow-sm mb-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
       >
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          <Input
-            placeholder="Tìm kiếm sản phẩm..."
-            className="pl-10 border-gray-200 focus:border-pink-300 focus:ring-pink-200"
-          />
+        <h3 className="text-lg font-semibold mb-4">Bộ lọc tìm kiếm</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Price Range */}
+          <div className="space-y-4">
+            <h4 className="font-medium">Giá</h4>
+            <SliderCustom
+              defaultValue={[0, 50]}
+              max={50}
+              step={1}
+              value={priceRange}
+              onValueChange={setPriceRange}
+              className="w-full"
+            />
+            <div className="flex justify-between text-sm text-gray-600">
+              <span>{priceRange[0]}M VND</span>
+              <span>{priceRange[1]}M VND</span>
+            </div>
+          </div>
+
+          {/* Category */}
+          <div className="space-y-4">
+            <h4 className="font-medium">Danh mục</h4>
+            <Select value={category} onValueChange={setCategory}>
+              <SelectTrigger>
+                <SelectValue placeholder="Chọn danh mục" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="xe_tay_thang">Xe tay thẳng</SelectItem>
+                <SelectItem value="xe_tay_cong">Xe tay cong</SelectItem>
+                <SelectItem value="xe_gap">Xe đạp gấp</SelectItem>
+                <SelectItem value="xe_mini">Xe đạp mini</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Brand */}
+          <div className="space-y-4">
+            <h4 className="font-medium">Hãng xe</h4>
+            <Select value={brand} onValueChange={setBrand}>
+              <SelectTrigger>
+                <SelectValue placeholder="Chọn hãng xe" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Giant">Giant</SelectItem>
+                <SelectItem value="Trek">Trek</SelectItem>
+                <SelectItem value="Specialized">Specialized</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-        <Button variant="outline" className="border-gray-200 text-gray-600">
-          <Filter className="mr-2 h-4 w-4" /> Lọc
-        </Button>
+
+        <div className="flex gap-2 mt-4">
+          <Button variant="outline" onClick={handleReset} className="flex-1">
+            Mặc định
+          </Button>
+          <Button onClick={handleSearch} className="flex-1 bg-pink-500 hover:bg-pink-600 text-white">
+            Tìm kiếm
+          </Button>
+        </div>
       </motion.div>
 
       {products.length > 0 ? (

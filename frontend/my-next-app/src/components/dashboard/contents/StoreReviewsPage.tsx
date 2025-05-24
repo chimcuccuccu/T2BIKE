@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Star, Search, Filter, Plus, Pencil, Trash2, ChevronLeft, ChevronRight } from "lucide-react"
+import { Star, Search, Filter, Plus, Pencil, Trash2, ChevronLeft, ChevronRight, X } from "lucide-react"
 import { useEffect, useState } from "react"
 import { format } from "date-fns"
 import {
@@ -13,6 +13,13 @@ import {
     DialogDescription,
 } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
 interface Review {
     id: number
@@ -49,11 +56,24 @@ export default function StoreReviewsPage() {
         rating: 0
     })
     const [deleteError, setDeleteError] = useState<string | null>(null)
+    const [searchParams, setSearchParams] = useState({
+        keyword: "",
+        rating: "all"
+    })
 
     const fetchReviews = async (page: number) => {
         try {
             setIsLoading(true)
-            const response = await fetch(`http://localhost:8081/api/shop-reviews?page=${page}&size=5`)
+            const { keyword, rating } = searchParams
+            const queryParams = new URLSearchParams({
+                page: page.toString(),
+                size: "5"
+            })
+
+            if (keyword) queryParams.append("keyword", keyword)
+            if (rating && rating !== "all") queryParams.append("rating", rating)
+
+            const response = await fetch(`http://localhost:8081/api/shop-reviews/search?${queryParams.toString()}`)
             const data: ReviewResponse = await response.json()
             setReviews(data.content)
             setTotalPages(data.totalPages)
@@ -66,7 +86,20 @@ export default function StoreReviewsPage() {
 
     useEffect(() => {
         fetchReviews(currentPage)
-    }, [currentPage])
+    }, [currentPage, searchParams])
+
+    const handleSearch = () => {
+        setCurrentPage(0)
+        fetchReviews(0)
+    }
+
+    const handleClearSearch = () => {
+        setSearchParams({
+            keyword: "",
+            rating: "all"
+        })
+        setCurrentPage(0)
+    }
 
     const handleEdit = (review: Review) => {
         setSelectedReview(review)
@@ -152,12 +185,48 @@ export default function StoreReviewsPage() {
             <div className="flex gap-4 mb-6">
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                    <Input className="pl-10" placeholder="Tìm kiếm đánh giá..." />
+                    <Input
+                        className="pl-10"
+                        placeholder="Tìm kiếm đánh giá..."
+                        value={searchParams.keyword}
+                        onChange={(e) => setSearchParams(prev => ({ ...prev, keyword: e.target.value }))}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                    />
                 </div>
-                <Button variant="outline" className="border-gray-200">
-                    <Filter className="w-4 h-4 mr-2" />
-                    Lọc
+                <Select
+                    value={searchParams.rating}
+                    onValueChange={(value) => setSearchParams(prev => ({ ...prev, rating: value }))}
+                >
+                    <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Đánh giá" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">Tất cả</SelectItem>
+                        <SelectItem value="5">5 sao</SelectItem>
+                        <SelectItem value="4">4 sao</SelectItem>
+                        <SelectItem value="3">3 sao</SelectItem>
+                        <SelectItem value="2">2 sao</SelectItem>
+                        <SelectItem value="1">1 sao</SelectItem>
+                    </SelectContent>
+                </Select>
+                <Button
+                    variant="outline"
+                    className="border-gray-200"
+                    onClick={handleSearch}
+                >
+                    <Search className="w-4 h-4 mr-2" />
+                    Tìm kiếm
                 </Button>
+                {(searchParams.keyword || searchParams.rating) && (
+                    <Button
+                        variant="outline"
+                        className="border-gray-200"
+                        onClick={handleClearSearch}
+                    >
+                        <X className="w-4 h-4 mr-2" />
+                        Xóa bộ lọc
+                    </Button>
+                )}
             </div>
 
             <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>

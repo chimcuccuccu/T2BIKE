@@ -71,7 +71,7 @@ export const PaymentForm = ({ customerInfo, paymentMethod, setPaymentMethod, onS
                 </Label>
               </div>
 
-              <div className="flex items-center space-x-2 border rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition-colors">
+              {/* <div className="flex items-center space-x-2 border rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition-colors">
                 <RadioGroupItem value="qr" id="qr" />
                 <Label htmlFor="qr" className="flex items-center cursor-pointer">
                   <QrCode className="h-5 w-5 mr-2 text-pink-500" />
@@ -80,7 +80,7 @@ export const PaymentForm = ({ customerInfo, paymentMethod, setPaymentMethod, onS
                     <p className="text-sm text-gray-500">Quét mã QR để thanh toán</p>
                   </div>
                 </Label>
-              </div>
+              </div> */}
             </RadioGroup>
           </div>
 
@@ -103,7 +103,7 @@ export const PaymentForm = ({ customerInfo, paymentMethod, setPaymentMethod, onS
             )}
           </AnimatePresence>
 
-          <div className="space-y-3">
+          {/* <div className="space-y-3">
             <h3 className="font-medium">Mã giảm giá</h3>
             <div className="flex gap-2">
               <Input placeholder="Nhập mã giảm giá" value={promoCode} onChange={(e) => setPromoCode(e.target.value)} />
@@ -111,7 +111,7 @@ export const PaymentForm = ({ customerInfo, paymentMethod, setPaymentMethod, onS
                 Áp dụng
               </Button>
             </div>
-          </div>
+          </div> */}
 
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="pt-4">
             <Button type="submit" className="w-full bg-pink-500 hover:bg-pink-600" disabled={isProcessing}>
