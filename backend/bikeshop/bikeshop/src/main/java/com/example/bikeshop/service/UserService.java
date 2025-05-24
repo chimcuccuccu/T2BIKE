@@ -6,6 +6,10 @@ import com.example.bikeshop.entity.User;
 import com.example.bikeshop.repository.ProductRepository;
 import com.example.bikeshop.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -52,8 +56,9 @@ public class UserService {
         return userRepository.findByUsername(username);
     }
 
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public Page<User> getAllUsers(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+        return userRepository.findAll(pageable);
     }
 
     public void updateUserInfo(Long currentUserId, Long targetUserId, UserDTO updatedUserDTO) {
@@ -83,4 +88,13 @@ public class UserService {
 
         userRepository.save(user);
     }
+
+    public void deleteUser(Long id) {
+        Optional<User> user = userRepository.findById(id);
+        if (user.isEmpty()) {
+            throw new RuntimeException("User không tồn tại");
+        }
+        userRepository.deleteById(id);
+    }
+
 }
