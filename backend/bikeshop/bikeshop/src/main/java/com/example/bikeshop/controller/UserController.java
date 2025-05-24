@@ -8,6 +8,7 @@ import com.example.bikeshop.service.OrderService;
 import com.example.bikeshop.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -85,8 +86,12 @@ public class UserController {
     }
 
     @GetMapping("/")
-    public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public ResponseEntity<Page<User>> getAllUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<User> users = userService.getAllUsers(page, size);
+        return ResponseEntity.ok(users);
     }
 
     @GetMapping("/me")
@@ -118,6 +123,7 @@ public class UserController {
         }
     }
 
+
     @PutMapping("/admin/{id}")
     public ResponseEntity<?> updateByAdmin(
             @PathVariable Long id,
@@ -139,6 +145,47 @@ public class UserController {
     public ResponseEntity<UserOrderStatsDTO> getUserOrderStats(@PathVariable Long userId) {
         UserOrderStatsDTO stats = orderService.getUserOrderStats(userId);
         return ResponseEntity.ok(stats);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id, HttpSession session) {
+        Long currentUserId = (Long) session.getAttribute("userId");
+        if (currentUserId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Chưa đăng nhập");
+        }
+
+        Optional<User> currentUserOpt = userRepository.findById(currentUserId);
+        if (currentUserOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Người dùng hiện tại không tồn tại");
+        }
+
+        User currentUser = currentUserOpt.get();
+        if (!"admin".equalsIgnoreCase(currentUser.getRole())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Chỉ admin mới được xóa user");
+        }
+
+        try {
+            userService.deleteUser(id);
+            return ResponseEntity.ok("Xóa user thành công");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/admin/add")
+    public ResponseEntity<?> addUserByAdmin(@RequestBody UserDTO dto, HttpSession session) {
+        Long currentUserId = (Long) session.getAttribute("userId");
+        if (currentUserId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Chưa đăng nhập");
+        }
+
+        User currentUser = userRepository.findById(currentUserId).orElse(null);
+        if (currentUser == null || !"admin".equalsIgnoreCase(currentUser.getRole())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Chỉ admin mới được thêm người dùng");
+        }
+
+        userService.registerUser(dto);
+        return ResponseEntity.ok("Thêm người dùng thành công");
     }
 
 }

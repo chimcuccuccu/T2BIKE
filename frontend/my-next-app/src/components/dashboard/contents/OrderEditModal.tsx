@@ -151,13 +151,14 @@ export default function OrderEditModal({ isOpen, onClose, orderId, onOrderUpdate
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-2xl">
                 <DialogHeader>
-                    <DialogTitle>Chỉnh sửa đơn hàng #{orderId}</DialogTitle>
+                    <DialogTitle className="text-pink-600 font-semibold text-2xl">Chỉnh sửa đơn hàng #{orderId}</DialogTitle>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="customerName">Tên khách hàng</Label>
+                            <Label htmlFor="customerName"
+                            className="font-semibold text-pink-500">Tên khách hàng</Label>
                             <Input
                                 id="customerName"
                                 name="customerName"
@@ -168,7 +169,8 @@ export default function OrderEditModal({ isOpen, onClose, orderId, onOrderUpdate
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="status">Trạng thái</Label>
+                            <Label htmlFor="status"
+                            className="font-semibold text-pink-500">Trạng thái</Label>
                             <Select value={formData.status} onValueChange={handleStatusChange}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Chọn trạng thái" />
@@ -185,10 +187,11 @@ export default function OrderEditModal({ isOpen, onClose, orderId, onOrderUpdate
                     </div>
 
                     <div className="space-y-4">
-                        <h3 className="font-medium">Thông tin giao hàng</h3>
+                        <h3 className="font-medium text-pink-600 font-semibold">Thông tin giao hàng</h3>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="receiverName">Tên người nhận</Label>
+                                <Label htmlFor="receiverName"
+                                className="font-semibold">Tên người nhận</Label>
                                 <Input
                                     id="receiverName"
                                     name="shippingInfo.receiverName"
@@ -199,7 +202,8 @@ export default function OrderEditModal({ isOpen, onClose, orderId, onOrderUpdate
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="phone">Số điện thoại</Label>
+                                <Label htmlFor="phone"
+                                className="font-semibold">Số điện thoại</Label>
                                 <Input
                                     id="phone"
                                     name="shippingInfo.phone"
@@ -210,7 +214,8 @@ export default function OrderEditModal({ isOpen, onClose, orderId, onOrderUpdate
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="province">Tỉnh/Thành phố</Label>
+                                <Label htmlFor="province"
+                                className="font-semibold">Tỉnh/Thành phố</Label>
                                 <Input
                                     id="province"
                                     name="shippingInfo.province"
@@ -221,7 +226,8 @@ export default function OrderEditModal({ isOpen, onClose, orderId, onOrderUpdate
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="district">Quận/Huyện</Label>
+                                <Label htmlFor="district"
+                                className="font-semibold">Quận/Huyện</Label>
                                 <Input
                                     id="district"
                                     name="shippingInfo.district"
@@ -232,7 +238,8 @@ export default function OrderEditModal({ isOpen, onClose, orderId, onOrderUpdate
                             </div>
 
                             <div className="space-y-2 col-span-2">
-                                <Label htmlFor="address">Địa chỉ</Label>
+                                <Label htmlFor="address"
+                                className="font-semibold">Địa chỉ</Label>
                                 <Input
                                     id="address"
                                     name="shippingInfo.address"
@@ -243,7 +250,8 @@ export default function OrderEditModal({ isOpen, onClose, orderId, onOrderUpdate
                             </div>
 
                             <div className="space-y-2 col-span-2">
-                                <Label htmlFor="note">Ghi chú</Label>
+                                <Label htmlFor="note"
+                                className="font-semibold">Ghi chú</Label>
                                 <Input
                                     id="note"
                                     name="shippingInfo.note"
@@ -258,7 +266,7 @@ export default function OrderEditModal({ isOpen, onClose, orderId, onOrderUpdate
                         <Button type="button" variant="outline" onClick={onClose}>
                             Hủy
                         </Button>
-                        <Button type="submit" disabled={isLoading}>
+                        <Button type="submit" className="bg-pink-500" disabled={isLoading}>
                             {isLoading ? "Đang cập nhật..." : "Cập nhật"}
                         </Button>
                     </div>
