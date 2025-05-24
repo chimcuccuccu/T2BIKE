@@ -13,6 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/product-reviews")
@@ -50,7 +51,7 @@ public class ProductReviewController {
         if (userId == null) return ResponseEntity.status(401).body("Chưa đăng nhập");
 
         reviewService.deleteReview(reviewId, userId);
-        return ResponseEntity.ok("Đã xoá đánh giá");
+        return ResponseEntity.ok(Map.of("message", "Đã xóa đánh giá"));
     }
 
     @PutMapping("/{reviewId}")
@@ -61,7 +62,7 @@ public class ProductReviewController {
         if (userId == null) return ResponseEntity.status(401).body("Chưa đăng nhập");
 
         reviewService.updateReview(reviewId, request, userId);
-        return ResponseEntity.ok("Đã cập nhật đánh giá");
+        return ResponseEntity.ok(Map.of("message", "Đã cập nhâ đánh giá"));
     }
 
     @PostMapping("/answer/{reviewId}")
@@ -72,7 +73,7 @@ public class ProductReviewController {
         if (adminId == null) return ResponseEntity.status(401).body("Chưa đăng nhập");
 
         reviewService.answerReview(reviewId, request.getAnswer(), adminId);
-        return ResponseEntity.ok("Đã trả lời câu hỏi");
+        return ResponseEntity.ok(Map.of("message", "Đã trả lời câu hỏi"));
     }
 
     @PutMapping("/answer/{reviewId}")
@@ -83,7 +84,7 @@ public class ProductReviewController {
         if (adminId == null) return ResponseEntity.status(401).body("Chưa đăng nhập");
 
         reviewService.updateAnswer(reviewId, request.getAnswer(), adminId);
-        return ResponseEntity.ok("Đã cập nhật câu trả lời");
+        return ResponseEntity.ok(Map.of("message", "Đã cập nhật câu trả lời"));
     }
 
     @DeleteMapping("/answer/{reviewId}")
@@ -92,7 +93,7 @@ public class ProductReviewController {
         if (adminId == null) return ResponseEntity.status(401).body("Chưa đăng nhập");
 
         reviewService.deleteAnswer(reviewId, adminId);
-        return ResponseEntity.ok("Đã xoá câu trả lời");
+        return ResponseEntity.ok(Map.of("message", "Đã xóa câu trả lời"));
     }
 
     @GetMapping("/answers")
