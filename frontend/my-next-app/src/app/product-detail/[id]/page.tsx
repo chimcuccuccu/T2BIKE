@@ -825,7 +825,7 @@ export default function ProductDetail() {
                                         alt="Xe tay thang"
                                         width={600}
                                         height={600}
-                                        className="object-contain transition-transform duration-300 hover:scale-105 cursor-pointer"
+                                        className="object-cover w-full h-full transition-transform duration-300 hover:scale-105 cursor-pointer"
                                         onClick={() => setLightboxOpen(true)}
                                     />
 
@@ -878,7 +878,7 @@ export default function ProductDetail() {
                                 <ImageLightbox
                                     isOpen={lightboxOpen}
                                     onClose={() => setLightboxOpen(false)}
-                                    src={product.imageUrls[selectedImage] || "/placeholder.svg"}
+                                    src={product.imageUrls[currentImage] || "/placeholder.svg"}
                                     alt="Xe đạp ABC"
                                 />
                             </div>

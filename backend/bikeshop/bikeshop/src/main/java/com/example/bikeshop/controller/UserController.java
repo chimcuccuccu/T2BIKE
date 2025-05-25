@@ -188,4 +188,13 @@ public class UserController {
         return ResponseEntity.ok("Thêm người dùng thành công");
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<Page<User>> searchUsers(
+            @RequestParam("keyword") String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Page<User> result = userService.searchUsers(keyword, page, size);
+        return ResponseEntity.ok(result);
+    }
+
 }
