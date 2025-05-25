@@ -116,4 +116,3 @@ public class ShopReviewController {
         return ResponseEntity.ok(reviewService.searchReviews(rating, keyword, PageRequest.of(page, size)));
     }
 }
-

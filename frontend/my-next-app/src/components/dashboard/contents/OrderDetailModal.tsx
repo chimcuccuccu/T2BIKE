@@ -177,6 +177,7 @@ export default function OrderDetailModal({ isOpen, onClose, orderId }: OrderDeta
                                         </div>
                                         <div className="flex-1">
                                             <h4 className="font-medium">{item.product.name}</h4>
+                                            <h4 className="font-medium">{item.product.name}</h4>
                                             <p className="text-sm text-gray-600">Số lượng: {item.quantity}</p>
                                             <p className="text-sm text-gray-600">Đơn giá: {formatPrice(item.priceAtOrder)}</p>
                                         </div>

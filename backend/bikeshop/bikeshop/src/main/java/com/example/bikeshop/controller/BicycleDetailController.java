@@ -35,12 +35,18 @@ public class BicycleDetailController {
     }
 
 
-
     // Cập nhật detail
     @PutMapping("/details/{id}")
     public ResponseEntity<BicycleDetailDTO> updateDetail(@PathVariable Long id, @RequestBody BicycleDetailDTO dto) {
         BicycleDetailDTO updatedDetail = productDetailService.updateDetail(id, dto);
         return new ResponseEntity<>(updatedDetail, HttpStatus.OK);
+    }
+
+    // Thêm detail mới
+    @PostMapping("/details")
+    public ResponseEntity<BicycleDetailDTO> addDetail(@RequestBody BicycleDetailRequest dto) {
+        BicycleDetailDTO newDetail = productDetailService.addDetail(dto);
+        return new ResponseEntity<>(newDetail, HttpStatus.CREATED);
     }
 
     // Xoá detail

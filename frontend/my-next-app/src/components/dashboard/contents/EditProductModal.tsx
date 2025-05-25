@@ -290,9 +290,9 @@ export default function EditProductModal({ isOpen, onClose, product, onUpdate }:
                                             </SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="xe_tay_cong">Xe tay cong</SelectItem>
-                                                <SelectItem value="xe_tay_thang">Xe số</SelectItem>
-                                                <SelectItem value="xe_gap">Xe ga</SelectItem>
-                                                <SelectItem value="xe_dien">Xe điện</SelectItem>
+                                                <SelectItem value="xe_tay_thang">Xe tay thẳng</SelectItem>
+                                                <SelectItem value="xe_gap">Xe gấp</SelectItem>
+                                                <SelectItem value="xe_mini">Xe mini</SelectItem>
                                                 <SelectItem value="xe_the_thao">Xe thể thao</SelectItem>
                                             </SelectContent>
                                         </Select>
