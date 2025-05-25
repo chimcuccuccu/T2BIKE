@@ -195,7 +195,9 @@ export default function ProductsContent() {
 
   const handleDelete = async (productId: number) => {
     try {
-      await axios.delete(`/api/products/${productId}`)
+      await axios.delete(`http://localhost:8081/api/all-products/${productId}`, {
+        withCredentials: true
+      })
       toast({
         title: "Success",
         description: "Product deleted successfully",

@@ -214,8 +214,8 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }: AddProdu
                       <SelectContent>
                         <SelectItem value="xe_tay_cong">Xe tay cong</SelectItem>
                         <SelectItem value="xe_tay_thang">Xe tay thẳng</SelectItem>
-                        <SelectItem value="xe_dap_dia_hinh">Xe đạp địa hình</SelectItem>
-                        <SelectItem value="xe_dap_the_thao">Xe đạp thể thao</SelectItem>
+                        <SelectItem value="xe_gap">Xe gấp</SelectItem>
+                        <SelectItem value="xe_mini">Xe mini</SelectItem>
                         <SelectItem value="xe_dap_tre_em">Xe đạp trẻ em</SelectItem>
                       </SelectContent>
                     </Select>
