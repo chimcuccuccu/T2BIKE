@@ -157,11 +157,11 @@ export function WishlistDropdown() {
 
                   <Separator />
 
-                  <div className="p-4">
+                  {/* <div className="p-4">
                     <Link href="/wishlist" onClick={() => setIsOpen(false)}>
                       <Button className="w-full bg-pink-500 hover:bg-pink-600">Xem tất cả yêu thích</Button>
                     </Link>
-                  </div>
+                  </div> */}
                 </>
               )}
             </motion.div>

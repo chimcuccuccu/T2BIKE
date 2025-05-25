@@ -356,8 +356,8 @@ export default function CartPage() {
 
               <div className="mt-6">
                 <h3 className="font-medium text-gray-800 mb-2">Chúng tôi chấp nhận:</h3>
-                <div className="grid grid-cols-4 gap-2">
-                  <div className="h-10 bg-blue-500 rounded-md flex items-center justify-center text-xs font-medium text-white shadow-sm">
+                <div className="grid grid-1 gap-2">
+                  {/* <div className="h-10 bg-blue-500 rounded-md flex items-center justify-center text-xs font-medium text-white shadow-sm">
                     VISA
                   </div>
                   <div className="h-10 bg-red-500 rounded-md flex items-center justify-center text-xs font-medium text-white shadow-sm">
@@ -365,9 +365,9 @@ export default function CartPage() {
                   </div>
                   <div className="h-10 bg-pink-500 rounded-md flex items-center justify-center text-xs font-medium text-white shadow-sm">
                     MOMO
-                  </div>
-                  <div className="h-10 bg-yellow-400 rounded-md flex items-center justify-center text-xs font-medium text-white shadow-sm">
-                    COD
+                  </div> */}
+                  <div className="h-10 bg-orange-400 rounded-md flex items-center justify-center text-xs font-medium text-white shadow-sm">
+                    Thanh toán tận nơi
                   </div>
                 </div>
               </div>
