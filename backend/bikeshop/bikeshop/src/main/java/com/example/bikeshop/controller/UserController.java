@@ -6,23 +6,19 @@ import com.example.bikeshop.entity.User;
 import com.example.bikeshop.repository.UserRepository;
 import com.example.bikeshop.service.OrderService;
 import com.example.bikeshop.service.UserService;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
 
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
-@Controller
+@RestController
 @RequestMapping("/api/users")
 public class UserController {
+
     @Autowired
     private UserService userService;
 
@@ -32,155 +28,37 @@ public class UserController {
     @Autowired
     private OrderService orderService;
 
-    @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@RequestBody UserDTO userDTO) {
-        try {
-            if (userDTO.getUsername() == null || userDTO.getUsername().isEmpty()) {
-                return ResponseEntity.badRequest().body("Username không được để trống");
-            }
-            userService.registerUser(userDTO);
-            return ResponseEntity.ok("User created");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi server: " + e.getMessage());
-        }
-    }
-
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody UserDTO userDTO, HttpServletResponse response, HttpSession session) {
-        try {
-            User user = userService.login(userDTO.getUsername(), userDTO.getPassword());
-            if (user != null) {
-                session.setAttribute("userId", user.getId());
-                Cookie cookie = new Cookie("authToken", user.getUsername());
-                cookie.setHttpOnly(true);
-                cookie.setMaxAge(3600);
-                cookie.setPath("/");
-                response.addCookie(cookie);
-
-                return ResponseEntity.ok(user);
-            } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("message", "Sai tài khoản hoặc mật khẩu"));
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Lỗi: " + e.getMessage()));
-        }
-    }
-
-    @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletResponse response, HttpSession session) {
-        session.invalidate();
-        // Xóa cookie
-        Cookie cookie = new Cookie("authToken", null);
-        cookie.setMaxAge(0);
-        cookie.setPath("/");
-        response.addCookie(cookie);
-
-        return ResponseEntity.ok("Đăng xuất thành công");
-    }
-
-    @GetMapping("/{username}")
-    public ResponseEntity<User> getUser(@PathVariable String username) {
-        Optional<User> user = userService.getUserByUsername(username);
-        return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @GetMapping("/")
-    public ResponseEntity<Page<User>> getAllUsers(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
-        Page<User> users = userService.getAllUsers(page, size);
-        return ResponseEntity.ok(users);
-    }
-
+    // Lấy thông tin user hiện tại
     @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser(HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Chưa đăng nhập");
-        }
-
-        Optional<User> userOpt = userRepository.findById(userId);
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy người dùng");
-        }
-
-        return ResponseEntity.ok(userOpt.get());
+    public ResponseEntity<User> getCurrentUser(Authentication authentication) {
+        String username = authentication.getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return ResponseEntity.ok(user);
     }
 
+    // Cập nhật thông tin bản thân
     @PutMapping("/me")
-    public ResponseEntity<?> updateSelf(@RequestBody UserDTO dto, HttpSession session) {
-        Long currentUserId = (Long) session.getAttribute("userId");
-        if (currentUserId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Chưa đăng nhập");
-        }
+    public ResponseEntity<?> updateSelf(@RequestBody UserDTO dto, Authentication authentication) {
+        String username = authentication.getName();
+        User currentUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
         try {
-            userService.updateUserInfo(currentUserId, currentUserId, dto);
+            userService.updateUserInfo(currentUser.getId(), currentUser.getId(), dto);
             return ResponseEntity.ok("Cập nhật thông tin thành công");
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         }
     }
 
-
-    @PutMapping("/admin/{id}")
-    public ResponseEntity<?> updateByAdmin(
-            @PathVariable Long id,
-            @RequestBody UserDTO dto,
-            HttpSession session) {
-        Long currentUserId = (Long) session.getAttribute("userId");
-        if (currentUserId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Chưa đăng nhập");
-        }
-        try {
-            userService.updateUserInfo(currentUserId, id, dto);
-            return ResponseEntity.ok("Admin cập nhật thông tin thành công");
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
-        }
-    }
-
-    @GetMapping("/{userId}/order-stats")
-    public ResponseEntity<UserOrderStatsDTO> getUserOrderStats(@PathVariable Long userId) {
-        UserOrderStatsDTO stats = orderService.getUserOrderStats(userId);
-        return ResponseEntity.ok(stats);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable Long id, HttpSession session) {
-        Long currentUserId = (Long) session.getAttribute("userId");
-        if (currentUserId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Chưa đăng nhập");
-        }
-
-        Optional<User> currentUserOpt = userRepository.findById(currentUserId);
-        if (currentUserOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Người dùng hiện tại không tồn tại");
-        }
-
-        User currentUser = currentUserOpt.get();
-        if (!"admin".equalsIgnoreCase(currentUser.getRole())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Chỉ admin mới được xóa user");
-        }
-
-        try {
-            userService.deleteUser(id);
-            return ResponseEntity.ok("Xóa user thành công");
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
-    }
-
+    // Admin thêm user
     @PostMapping("/admin/add")
-    public ResponseEntity<?> addUserByAdmin(@RequestBody UserDTO dto, HttpSession session) {
-        Long currentUserId = (Long) session.getAttribute("userId");
-        if (currentUserId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Chưa đăng nhập");
-        }
+    public ResponseEntity<?> addUserByAdmin(@RequestBody UserDTO dto, Authentication authentication) {
+        String username = authentication.getName();
+        User adminUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Admin not found"));
 
-        User currentUser = userRepository.findById(currentUserId).orElse(null);
-        if (currentUser == null || !"admin".equalsIgnoreCase(currentUser.getRole())) {
+        if (!"ADMIN".equalsIgnoreCase(adminUser.getRole())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Chỉ admin mới được thêm người dùng");
         }
 
@@ -188,13 +66,88 @@ public class UserController {
         return ResponseEntity.ok("Thêm người dùng thành công");
     }
 
+    // Admin sửa thông tin user khác
+    @PutMapping("/admin/{id}")
+    public ResponseEntity<?> updateByAdmin(@PathVariable Long id, @RequestBody UserDTO dto, Authentication authentication) {
+        String username = authentication.getName();
+        User adminUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Admin not found"));
+
+        if (!"ADMIN".equalsIgnoreCase(adminUser.getRole())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Chỉ admin mới được sửa người dùng");
+        }
+
+        userService.updateUserInfo(adminUser.getId(), id, dto);
+        return ResponseEntity.ok("Admin cập nhật thông tin thành công");
+    }
+
+    // Admin xóa user
+    @DeleteMapping("/admin/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id, Authentication authentication) {
+        String username = authentication.getName();
+        User adminUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Admin not found"));
+
+        if (!"ADMIN".equalsIgnoreCase(adminUser.getRole())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Chỉ admin mới được xóa user");
+        }
+
+        userService.deleteUser(id);
+        return ResponseEntity.ok("Xóa user thành công");
+    }
+
+    // Xem danh sách tất cả user (Admin)
+    @GetMapping("/")
+    public ResponseEntity<Page<User>> getAllUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            Authentication authentication) {
+
+        String username = authentication.getName();
+        User adminUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Admin not found"));
+
+        if (!"ADMIN".equalsIgnoreCase(adminUser.getRole())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        Page<User> users = userService.getAllUsers(page, size);
+        return ResponseEntity.ok(users);
+    }
+
+    // Search user (Admin)
     @GetMapping("/search")
     public ResponseEntity<Page<User>> searchUsers(
             @RequestParam("keyword") String keyword,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size,
+            Authentication authentication) {
+
+        String username = authentication.getName();
+        User adminUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Admin not found"));
+
+        if (!"ADMIN".equalsIgnoreCase(adminUser.getRole())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         Page<User> result = userService.searchUsers(keyword, page, size);
         return ResponseEntity.ok(result);
     }
 
+    // Lấy thống kê đơn hàng của user
+    @GetMapping("/{userId}/order-stats")
+    public ResponseEntity<UserOrderStatsDTO> getUserOrderStats(@PathVariable Long userId, Authentication authentication) {
+        // Bạn có thể cho phép admin xem tất cả hoặc user xem chính mình
+        String username = authentication.getName();
+        User currentUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!"ADMIN".equalsIgnoreCase(currentUser.getRole()) && !currentUser.getId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        UserOrderStatsDTO stats = orderService.getUserOrderStats(userId);
+        return ResponseEntity.ok(stats);
+    }
 }
