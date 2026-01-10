@@ -27,15 +27,20 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 antMatcher("/api/auth/**"),
-                                antMatcher("/api/public/**")
+                                antMatcher("/api/public/**"),
+                                antMatcher("/oauth2/**"),
+                                antMatcher("/login/oauth2/**")
                         ).permitAll()
                         .requestMatchers(antMatcher("/api/admin/**")).hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
+                .oauth2Login(Customizer.withDefaults())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

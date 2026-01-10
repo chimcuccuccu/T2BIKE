@@ -53,4 +53,8 @@ public class User {
 
     @Column(name = "role")
     private String role;
+
+    @Column(name = "provider")
+    @Enumerated(EnumType.STRING)
+    private AuthProvider provider;
 }
