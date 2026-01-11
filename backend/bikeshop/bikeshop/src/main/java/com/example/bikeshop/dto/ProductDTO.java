@@ -1,5 +1,6 @@
 package com.example.bikeshop.dto;
 
+import com.example.bikeshop.entity.Category;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,7 +15,7 @@ public class ProductDTO {
     private String name;
     private String description;
     private Double price;
-    private String category;
+    private Category category;
     private String brand;
     private Integer quantity;
     private List<String> imageUrls;

@@ -1,5 +1,6 @@
 package com.example.bikeshop.repository;
 
+import com.example.bikeshop.entity.Category;
 import com.example.bikeshop.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,4 +24,8 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     Page<Product> searchAllFields(@Param("keyword") String keyword, Pageable pageable);
 
     Product findProductByName(String productName);
+
+    @Query("SELECT p FROM Product p WHERE p.category = :category")
+    List<Product> findByCategory(@Param("category") Category category);
+
 }

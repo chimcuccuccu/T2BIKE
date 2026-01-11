@@ -30,7 +30,7 @@ public class BicycleDetailDTO {
         this.description = product.getDescription();
         this.price = product.getPrice();
         this.imageUrls = product.getImageUrls();
-        this.category = product.getCategory();
+        this.category = product.getCategory().name();
         this.quantity = product.getQuantity();
         this.color = product.getColor();
         this.brand = product.getBrand();

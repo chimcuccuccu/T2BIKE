@@ -11,8 +11,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
-
 @Configuration
 public class SecurityConfig {
 
@@ -24,23 +22,36 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(Customizer.withDefaults())
+                .cors(cors -> cors.disable())
+
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+
                 .authorizeHttpRequests(auth -> auth
+                        // ===== PUBLIC API =====
                         .requestMatchers(
-                                antMatcher("/api/auth/**"),
-                                antMatcher("/api/public/**"),
-                                antMatcher("/oauth2/**"),
-                                antMatcher("/login/oauth2/**")
+                                "/api/auth/**",
+                                "/api/public/**",
+                                "/api/chatbot/**",
+                                "/oauth2/**",
+                                "/login/oauth2/**"
                         ).permitAll()
-                        .requestMatchers(antMatcher("/api/admin/**")).hasRole("ADMIN")
+
+                        // ===== ADMIN =====
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
+                        // ===== CÒN LẠI =====
                         .anyRequest().authenticated()
                 )
+
+                // Google login CHỈ để dùng cho web
                 .oauth2Login(Customizer.withDefaults())
+
+                // JWT filter
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

@@ -31,7 +31,8 @@ public class Product {
     private List<String> imageUrls;
 
     @Column(name = "category")
-    private String category;
+    @Enumerated(EnumType.STRING)
+    private Category category;
 
     @Column(name = "brand")
     private String brand;

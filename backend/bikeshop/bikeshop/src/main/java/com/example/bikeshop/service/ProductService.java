@@ -1,6 +1,7 @@
 package com.example.bikeshop.service;
 
 import com.example.bikeshop.dto.ProductDTO;
+import com.example.bikeshop.entity.Category;
 import com.example.bikeshop.entity.Product;
 import com.example.bikeshop.repository.ProductRepository;
 import com.example.bikeshop.specification.ProductSpecification;
@@ -79,7 +80,7 @@ public class ProductService {
         product.setName(dto.getName());
         product.setDescription(dto.getDescription());
         product.setPrice(dto.getPrice());
-        product.setCategory(dto.getCategory());
+        product.setCategory(Category.valueOf(dto.getCategory().name()));
         product.setBrand(dto.getBrand());
         product.setQuantity(dto.getQuantity());
         product.setColor(Collections.singletonList(dto.getColor()));
@@ -102,6 +103,27 @@ public class ProductService {
 
     public Product saveEntity(Product product) {
         return productRepository.save(product);
+    }
+
+    public String suggestProduct(String message) {
+        if (message.toLowerCase().contains("xe mini")) {
+            return formatProducts(productRepository.findByCategory(Category.xe_mini));
+        }
+        if (message.toLowerCase().contains("xe tay thang")) {
+            return formatProducts(productRepository.findByCategory(Category.xe_tay_thang));
+        }
+        return null;
+    }
+
+    private String formatProducts(List<Product> products) {
+        if (products.isEmpty()) return null;
+
+        StringBuilder sb = new StringBuilder("Shop gợi ý cho bạn:\n");
+        for (Product p : products) {
+            sb.append("- ").append(p.getName())
+                    .append(" | ").append(p.getPrice()).append(" VNĐ\n");
+        }
+        return sb.toString();
     }
 
 }
